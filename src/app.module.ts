@@ -17,6 +17,10 @@ import { TaxModule } from './tax/tax.module';
 import { ProductModule } from './product/product.module';
 import { InvoiceModule } from './invoice/invoice.module';
 import { QuoteModule } from './quote/quote.module';
+import { CreditNoteModule } from './credit-note/credit-note.module';
+import { StatsModule } from './stats/stats.module';
+import { PaymentModule } from './payment/payment.module';
+import { StatementModule } from './statement/statement.module';
 
 @Module({
   imports: [
@@ -55,6 +59,10 @@ import { QuoteModule } from './quote/quote.module';
     ProductModule,
     InvoiceModule,
     QuoteModule,
+    CreditNoteModule,
+    StatsModule,
+    PaymentModule,
+    StatementModule,
   ],
   controllers: [],
   providers: [],

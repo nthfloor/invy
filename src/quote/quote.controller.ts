@@ -7,6 +7,7 @@ import {
   Body,
   Param,
   Query,
+  Res,
   UseGuards,
   ParseUUIDPipe,
   HttpCode,
@@ -18,7 +19,9 @@ import {
   ApiResponse,
   ApiBearerAuth,
   ApiQuery,
+  ApiProduces,
 } from '@nestjs/swagger';
+import type { Response } from 'express';
 import { QuoteService } from './quote.service';
 import { QuoteEntity } from './quote.entity';
 import type { QuoteStatus, DocumentType } from './quote.entity';
@@ -33,13 +36,19 @@ import {
 import { ApiTokenGuard } from '../shared/auth/api-token.guard';
 import { PaginatedResult } from '../shared/utils/pagination';
 import { InvoiceEntity } from '../invoice/invoice.entity';
+import { PdfService } from '../shared/pdf/pdf.service';
+import { CompanyService } from '../company/company.service';
 
 @ApiTags('Quotes')
 @ApiBearerAuth()
 @UseGuards(ApiTokenGuard)
 @Controller('quotes')
 export class QuoteController {
-  constructor(private readonly quoteService: QuoteService) {}
+  constructor(
+    private readonly quoteService: QuoteService,
+    private readonly pdfService: PdfService,
+    private readonly companyService: CompanyService,
+  ) {}
 
   @Post()
   @ApiOperation({ summary: 'Create a new quote (fixed price)' })
@@ -270,6 +279,42 @@ export class QuoteController {
     @Query('companyId', ParseUUIDPipe) companyId: string,
   ): Promise<QuoteEntity> {
     return this.quoteService.removeItem({ quoteId: id, itemId, companyId });
+  }
+
+  // PDF Generation
+  @Get(':id/pdf')
+  @ApiOperation({ summary: 'Generate PDF for quote/estimate' })
+  @ApiQuery({ name: 'companyId', required: true, type: String })
+  @ApiQuery({
+    name: 'download',
+    required: false,
+    type: Boolean,
+    description: 'Set to true to download as attachment',
+  })
+  @ApiProduces('application/pdf')
+  @ApiResponse({ status: 200, description: 'PDF generated successfully' })
+  @ApiResponse({ status: 404, description: 'Quote/estimate not found' })
+  async generatePdf(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Query('companyId', ParseUUIDPipe) companyId: string,
+    @Query('download') download: string,
+    @Res() res: Response,
+  ): Promise<void> {
+    const quote = await this.quoteService.findById(id, companyId);
+    const company = await this.companyService.findById(companyId);
+
+    const pdfBuffer = await this.pdfService.generateQuotePdf(quote, company);
+
+    const filename = `${quote.quoteNumber}.pdf`;
+    const disposition = download === 'true' ? 'attachment' : 'inline';
+
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': `${disposition}; filename="${filename}"`,
+      'Content-Length': pdfBuffer.length,
+    });
+
+    res.end(pdfBuffer);
   }
 }
 

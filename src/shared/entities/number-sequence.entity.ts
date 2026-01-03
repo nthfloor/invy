@@ -6,7 +6,12 @@ import {
   Index,
 } from 'typeorm';
 
-export type SequenceType = 'invoice' | 'quote' | 'estimate';
+export type SequenceType =
+  | 'invoice'
+  | 'quote'
+  | 'estimate'
+  | 'credit_note'
+  | 'payment';
 
 @Entity('number_sequences')
 @Index(['companyId', 'sequenceType'], { unique: true })
