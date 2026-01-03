@@ -38,6 +38,7 @@ import { PaginatedResult } from '../shared/utils/pagination';
 import { InvoiceEntity } from '../invoice/invoice.entity';
 import { PdfService } from '../shared/pdf/pdf.service';
 import { CompanyService } from '../company/company.service';
+import { Idempotent } from '../shared/decorators/idempotent.decorator';
 
 @ApiTags('Quotes')
 @ApiBearerAuth()
@@ -51,6 +52,7 @@ export class QuoteController {
   ) {}
 
   @Post()
+  @Idempotent()
   @ApiOperation({ summary: 'Create a new quote (fixed price)' })
   @ApiResponse({
     status: 201,
@@ -118,10 +120,11 @@ export class QuoteController {
     @Param('id', ParseUUIDPipe) id: string,
     @Query('companyId', ParseUUIDPipe) companyId: string,
   ): Promise<QuoteEntity> {
-    return this.quoteService.findById(id, companyId);
+    return this.quoteService.findById({ id, companyId });
   }
 
   @Put(':id')
+  @Idempotent()
   @ApiOperation({ summary: 'Update quote/estimate header' })
   @ApiQuery({ name: 'companyId', required: true, type: String })
   @ApiResponse({
@@ -141,6 +144,7 @@ export class QuoteController {
   }
 
   @Post(':id/send')
+  @Idempotent()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Mark quote/estimate as sent' })
   @ApiQuery({ name: 'companyId', required: true, type: String })
@@ -152,10 +156,11 @@ export class QuoteController {
     @Param('id', ParseUUIDPipe) id: string,
     @Query('companyId', ParseUUIDPipe) companyId: string,
   ): Promise<QuoteEntity> {
-    return this.quoteService.markAsSent(id, companyId);
+    return this.quoteService.markAsSent({ id, companyId });
   }
 
   @Post(':id/view')
+  @Idempotent()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Mark quote/estimate as viewed' })
   @ApiQuery({ name: 'companyId', required: true, type: String })
@@ -167,10 +172,11 @@ export class QuoteController {
     @Param('id', ParseUUIDPipe) id: string,
     @Query('companyId', ParseUUIDPipe) companyId: string,
   ): Promise<QuoteEntity> {
-    return this.quoteService.markAsViewed(id, companyId);
+    return this.quoteService.markAsViewed({ id, companyId });
   }
 
   @Post(':id/accept')
+  @Idempotent()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Accept quote/estimate' })
   @ApiQuery({ name: 'companyId', required: true, type: String })
@@ -182,10 +188,11 @@ export class QuoteController {
     @Param('id', ParseUUIDPipe) id: string,
     @Query('companyId', ParseUUIDPipe) companyId: string,
   ): Promise<QuoteEntity> {
-    return this.quoteService.accept(id, companyId);
+    return this.quoteService.accept({ id, companyId });
   }
 
   @Post(':id/reject')
+  @Idempotent()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Reject quote/estimate' })
   @ApiQuery({ name: 'companyId', required: true, type: String })
@@ -202,6 +209,7 @@ export class QuoteController {
   }
 
   @Post(':id/convert')
+  @Idempotent()
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({
     summary: 'Convert accepted quote/estimate to invoice',
@@ -227,6 +235,7 @@ export class QuoteController {
 
   // Item management
   @Post(':id/items')
+  @Idempotent()
   @ApiOperation({ summary: 'Add item to quote/estimate' })
   @ApiQuery({ name: 'companyId', required: true, type: String })
   @ApiResponse({
@@ -246,6 +255,7 @@ export class QuoteController {
   }
 
   @Put(':id/items/:itemId')
+  @Idempotent()
   @ApiOperation({ summary: 'Update quote/estimate item' })
   @ApiQuery({ name: 'companyId', required: true, type: String })
   @ApiResponse({
@@ -267,6 +277,7 @@ export class QuoteController {
   }
 
   @Delete(':id/items/:itemId')
+  @Idempotent()
   @ApiOperation({ summary: 'Remove item from quote/estimate' })
   @ApiQuery({ name: 'companyId', required: true, type: String })
   @ApiResponse({
@@ -300,7 +311,7 @@ export class QuoteController {
     @Query('download') download: string,
     @Res() res: Response,
   ): Promise<void> {
-    const quote = await this.quoteService.findById(id, companyId);
+    const quote = await this.quoteService.findById({ id, companyId });
     const company = await this.companyService.findById(companyId);
 
     const pdfBuffer = await this.pdfService.generateQuotePdf(quote, company);
@@ -327,6 +338,7 @@ export class EstimateController {
   constructor(private readonly quoteService: QuoteService) {}
 
   @Post()
+  @Idempotent()
   @ApiOperation({ summary: 'Create a new estimate (variable price)' })
   @ApiResponse({
     status: 201,

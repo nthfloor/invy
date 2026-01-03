@@ -47,10 +47,10 @@ export class InvoiceService {
     const company = await this.companyService.findById(dto.companyId);
 
     // Validate client exists
-    const clientExists = await this.clientService.exists(
-      dto.clientId,
-      dto.companyId,
-    );
+    const clientExists = await this.clientService.exists({
+      id: dto.clientId,
+      companyId: dto.companyId,
+    });
     if (!clientExists) {
       throw new BadRequestException(
         `Client with ID ${dto.clientId} not found in this company`,
@@ -104,7 +104,10 @@ export class InvoiceService {
     await this.itemRepository.save(items);
 
     // Calculate totals
-    return this.recalculateTotals(savedInvoice.id, dto.companyId);
+    return this.recalculateTotals({
+      id: savedInvoice.id,
+      companyId: dto.companyId,
+    });
   }
 
   private createInvoiceItem({
@@ -134,11 +137,14 @@ export class InvoiceService {
     });
   }
 
-  async recalculateTotals(
-    id: string,
-    companyId: string,
-  ): Promise<InvoiceEntity> {
-    const invoice = await this.findById(id, companyId);
+  async recalculateTotals({
+    id,
+    companyId,
+  }: {
+    id: string;
+    companyId: string;
+  }): Promise<InvoiceEntity> {
+    const invoice = await this.findById({ id, companyId });
 
     const items = await this.itemRepository.find({
       where: { invoiceId: id },
@@ -172,7 +178,7 @@ export class InvoiceService {
     companyId: string;
     dto: UpdateInvoiceDto;
   }): Promise<InvoiceEntity> {
-    const invoice = await this.findById(id, companyId);
+    const invoice = await this.findById({ id, companyId });
 
     // Only draft invoices can be edited
     if (invoice.status !== 'draft') {
@@ -191,11 +197,23 @@ export class InvoiceService {
     return saved;
   }
 
-  async markAsSent(id: string, companyId: string): Promise<InvoiceEntity> {
+  async markAsSent({
+    id,
+    companyId,
+  }: {
+    id: string;
+    companyId: string;
+  }): Promise<InvoiceEntity> {
     return this.transitionStatus({ id, companyId, newStatus: 'sent' });
   }
 
-  async markAsViewed(id: string, companyId: string): Promise<InvoiceEntity> {
+  async markAsViewed({
+    id,
+    companyId,
+  }: {
+    id: string;
+    companyId: string;
+  }): Promise<InvoiceEntity> {
     return this.transitionStatus({ id, companyId, newStatus: 'viewed' });
   }
 
@@ -208,7 +226,7 @@ export class InvoiceService {
     companyId: string;
     amount: number;
   }): Promise<InvoiceEntity> {
-    const invoice = await this.findById(id, companyId);
+    const invoice = await this.findById({ id, companyId });
 
     if (invoice.status === 'cancelled') {
       throw new BadRequestException(
@@ -250,7 +268,7 @@ export class InvoiceService {
     companyId: string;
     dto: CancelInvoiceDto;
   }): Promise<InvoiceEntity> {
-    const invoice = await this.findById(id, companyId);
+    const invoice = await this.findById({ id, companyId });
 
     if (invoice.status === 'paid') {
       throw new BadRequestException(
@@ -280,7 +298,7 @@ export class InvoiceService {
     companyId: string;
     newStatus: InvoiceStatus;
   }): Promise<InvoiceEntity> {
-    const invoice = await this.findById(id, companyId);
+    const invoice = await this.findById({ id, companyId });
 
     const validTransitions = VALID_INVOICE_TRANSITIONS[invoice.status];
     if (!validTransitions.includes(newStatus)) {
@@ -296,7 +314,13 @@ export class InvoiceService {
     return saved;
   }
 
-  async findById(id: string, companyId: string): Promise<InvoiceEntity> {
+  async findById({
+    id,
+    companyId,
+  }: {
+    id: string;
+    companyId: string;
+  }): Promise<InvoiceEntity> {
     const invoice = await this.invoiceRepository.findOne({
       where: { id, companyId },
       relations: ['items', 'client'],
@@ -366,7 +390,7 @@ export class InvoiceService {
     companyId: string;
     dto: CreateInvoiceItemDto;
   }): Promise<InvoiceEntity> {
-    const invoice = await this.findById(invoiceId, companyId);
+    const invoice = await this.findById({ id: invoiceId, companyId });
 
     if (invoice.status !== 'draft') {
       throw new BadRequestException('Can only add items to draft invoices');
@@ -383,7 +407,7 @@ export class InvoiceService {
     });
     await this.itemRepository.save(item);
 
-    return this.recalculateTotals(invoiceId, companyId);
+    return this.recalculateTotals({ id: invoiceId, companyId });
   }
 
   async updateItem({
@@ -397,7 +421,7 @@ export class InvoiceService {
     companyId: string;
     dto: Partial<CreateInvoiceItemDto>;
   }): Promise<InvoiceEntity> {
-    const invoice = await this.findById(invoiceId, companyId);
+    const invoice = await this.findById({ id: invoiceId, companyId });
 
     if (invoice.status !== 'draft') {
       throw new BadRequestException('Can only update items on draft invoices');
@@ -423,7 +447,7 @@ export class InvoiceService {
 
     await this.itemRepository.save(item);
 
-    return this.recalculateTotals(invoiceId, companyId);
+    return this.recalculateTotals({ id: invoiceId, companyId });
   }
 
   async removeItem({
@@ -435,7 +459,7 @@ export class InvoiceService {
     itemId: string;
     companyId: string;
   }): Promise<InvoiceEntity> {
-    const invoice = await this.findById(invoiceId, companyId);
+    const invoice = await this.findById({ id: invoiceId, companyId });
 
     if (invoice.status !== 'draft') {
       throw new BadRequestException(
@@ -453,6 +477,6 @@ export class InvoiceService {
 
     await this.itemRepository.remove(item);
 
-    return this.recalculateTotals(invoiceId, companyId);
+    return this.recalculateTotals({ id: invoiceId, companyId });
   }
 }

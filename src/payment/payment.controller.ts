@@ -22,6 +22,7 @@ import { PaymentService } from './payment.service';
 import { CreatePaymentDto } from './dto';
 import type { PaymentStatus } from './payment.entity';
 import { ApiTokenGuard } from '../shared/auth/api-token.guard';
+import { Idempotent } from '../shared/decorators/idempotent.decorator';
 
 @ApiTags('Payments')
 @ApiBearerAuth()
@@ -31,6 +32,7 @@ export class PaymentController {
   constructor(private readonly paymentService: PaymentService) {}
 
   @Post()
+  @Idempotent()
   @ApiOperation({
     summary: 'Record a payment against an invoice',
     description:
@@ -126,6 +128,7 @@ export class PaymentController {
   }
 
   @Post(':id/refund')
+  @Idempotent()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Refund a payment' })
   @ApiQuery({ name: 'companyId', required: true, type: String })

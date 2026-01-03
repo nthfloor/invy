@@ -23,6 +23,7 @@ import {
 import { ProductService } from './product.service';
 import { CreateProductDto, UpdateProductDto } from './dto';
 import { ApiTokenGuard } from '../shared/auth/api-token.guard';
+import { Idempotent } from '../shared/decorators/idempotent.decorator';
 
 @ApiTags('Products')
 @ApiBearerAuth()
@@ -32,6 +33,7 @@ export class ProductController {
   constructor(private readonly productService: ProductService) {}
 
   @Post()
+  @Idempotent()
   @ApiOperation({ summary: 'Create a new product' })
   @ApiResponse({ status: 201, description: 'Product created successfully' })
   @ApiResponse({ status: 400, description: 'Invalid company ID' })
@@ -69,10 +71,11 @@ export class ProductController {
     if (!companyId) {
       throw new BadRequestException('companyId is required');
     }
-    return this.productService.findById(id, companyId);
+    return this.productService.findById({ id, companyId });
   }
 
   @Put(':id')
+  @Idempotent()
   @ApiOperation({ summary: 'Update a product' })
   @ApiQuery({ name: 'companyId', required: true, type: String })
   @ApiResponse({ status: 200, description: 'Product updated successfully' })
@@ -89,6 +92,7 @@ export class ProductController {
   }
 
   @Delete(':id')
+  @Idempotent()
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Archive a product (soft delete)' })
   @ApiQuery({ name: 'companyId', required: true, type: String })
@@ -101,6 +105,6 @@ export class ProductController {
     if (!companyId) {
       throw new BadRequestException('companyId is required');
     }
-    return this.productService.archive(id, companyId);
+    return this.productService.archive({ id, companyId });
   }
 }

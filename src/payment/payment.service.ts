@@ -41,10 +41,10 @@ export class PaymentService {
     await this.companyService.findById(dto.companyId);
 
     // Validate invoice exists and get its details
-    const invoice = await this.invoiceService.findById(
-      dto.invoiceId,
-      dto.companyId,
-    );
+    const invoice = await this.invoiceService.findById({
+      id: dto.invoiceId,
+      companyId: dto.companyId,
+    });
 
     // Validate payment amount doesn't exceed balance
     if (dto.amount > Number(invoice.balance)) {
@@ -222,7 +222,10 @@ export class PaymentService {
     balance: number;
     payments: PaymentEntity[];
   }> {
-    const invoice = await this.invoiceService.findById(invoiceId, companyId);
+    const invoice = await this.invoiceService.findById({
+      id: invoiceId,
+      companyId,
+    });
     const payments = await this.findByInvoice(invoiceId, companyId);
 
     return {

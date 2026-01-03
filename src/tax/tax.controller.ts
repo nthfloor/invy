@@ -23,6 +23,7 @@ import {
 import { TaxService } from './tax.service';
 import { CreateTaxDto, UpdateTaxDto } from './dto';
 import { ApiTokenGuard } from '../shared/auth/api-token.guard';
+import { Idempotent } from '../shared/decorators/idempotent.decorator';
 
 @ApiTags('Taxes')
 @ApiBearerAuth()
@@ -32,6 +33,7 @@ export class TaxController {
   constructor(private readonly taxService: TaxService) {}
 
   @Post()
+  @Idempotent()
   @ApiOperation({ summary: 'Create a new tax rate' })
   @ApiResponse({ status: 201, description: 'Tax created successfully' })
   @ApiResponse({ status: 400, description: 'Invalid company ID' })
@@ -46,7 +48,7 @@ export class TaxController {
     if (!companyId) {
       throw new BadRequestException('companyId is required');
     }
-    return this.taxService.findAll(companyId);
+    return this.taxService.findAll({ companyId });
   }
 
   @Get(':id')
@@ -61,10 +63,11 @@ export class TaxController {
     if (!companyId) {
       throw new BadRequestException('companyId is required');
     }
-    return this.taxService.findById(id, companyId);
+    return this.taxService.findById({ id, companyId });
   }
 
   @Put(':id')
+  @Idempotent()
   @ApiOperation({ summary: 'Update a tax' })
   @ApiQuery({ name: 'companyId', required: true, type: String })
   @ApiResponse({ status: 200, description: 'Tax updated successfully' })
@@ -81,6 +84,7 @@ export class TaxController {
   }
 
   @Put(':id/default')
+  @Idempotent()
   @ApiOperation({ summary: 'Set tax as default for company' })
   @ApiQuery({ name: 'companyId', required: true, type: String })
   @ApiResponse({ status: 200, description: 'Tax set as default' })
@@ -92,10 +96,11 @@ export class TaxController {
     if (!companyId) {
       throw new BadRequestException('companyId is required');
     }
-    return this.taxService.setDefault(id, companyId);
+    return this.taxService.setDefault({ id, companyId });
   }
 
   @Delete(':id')
+  @Idempotent()
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Deactivate a tax' })
   @ApiQuery({ name: 'companyId', required: true, type: String })
@@ -108,6 +113,6 @@ export class TaxController {
     if (!companyId) {
       throw new BadRequestException('companyId is required');
     }
-    return this.taxService.deactivate(id, companyId);
+    return this.taxService.deactivate({ id, companyId });
   }
 }

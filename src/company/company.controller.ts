@@ -22,6 +22,7 @@ import {
 import { CompanyService } from './company.service';
 import { CreateCompanyDto, UpdateCompanyDto } from './dto';
 import { ApiTokenGuard } from '../shared/auth/api-token.guard';
+import { Idempotent } from '../shared/decorators/idempotent.decorator';
 
 @ApiTags('Companies')
 @ApiBearerAuth()
@@ -31,6 +32,7 @@ export class CompanyController {
   constructor(private readonly companyService: CompanyService) {}
 
   @Post()
+  @Idempotent()
   @ApiOperation({ summary: 'Create a new company' })
   @ApiResponse({ status: 201, description: 'Company created successfully' })
   @ApiResponse({
@@ -58,6 +60,7 @@ export class CompanyController {
   }
 
   @Put(':id')
+  @Idempotent()
   @ApiOperation({ summary: 'Update a company' })
   @ApiResponse({ status: 200, description: 'Company updated successfully' })
   @ApiResponse({ status: 404, description: 'Company not found' })
@@ -69,6 +72,7 @@ export class CompanyController {
   }
 
   @Delete(':id')
+  @Idempotent()
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Archive a company (soft delete)' })
   @ApiResponse({ status: 204, description: 'Company archived successfully' })

@@ -62,7 +62,7 @@ export class TaxService {
     companyId: string;
     dto: UpdateTaxDto;
   }): Promise<TaxEntity> {
-    const tax = await this.findById(id, companyId);
+    const tax = await this.findById({ id, companyId });
 
     if (dto.name !== undefined) tax.name = dto.name;
     if (dto.rate !== undefined) tax.rate = dto.rate;
@@ -74,8 +74,14 @@ export class TaxService {
     return saved;
   }
 
-  async setDefault(id: string, companyId: string): Promise<TaxEntity> {
-    const tax = await this.findById(id, companyId);
+  async setDefault({
+    id,
+    companyId,
+  }: {
+    id: string;
+    companyId: string;
+  }): Promise<TaxEntity> {
+    const tax = await this.findById({ id, companyId });
 
     // Unset other defaults
     await this.taxRepository.update(
@@ -91,7 +97,13 @@ export class TaxService {
     return saved;
   }
 
-  async findById(id: string, companyId: string): Promise<TaxEntity> {
+  async findById({
+    id,
+    companyId,
+  }: {
+    id: string;
+    companyId: string;
+  }): Promise<TaxEntity> {
     const tax = await this.taxRepository.findOne({
       where: { id, companyId },
     });
@@ -103,21 +115,31 @@ export class TaxService {
     return tax;
   }
 
-  async findAll(companyId: string): Promise<TaxEntity[]> {
+  async findAll({ companyId }: { companyId: string }): Promise<TaxEntity[]> {
     return this.taxRepository.find({
       where: { companyId, isActive: true },
       order: { isDefault: 'DESC', name: 'ASC' },
     });
   }
 
-  async findDefault(companyId: string): Promise<TaxEntity | null> {
+  async findDefault({
+    companyId,
+  }: {
+    companyId: string;
+  }): Promise<TaxEntity | null> {
     return this.taxRepository.findOne({
       where: { companyId, isDefault: true, isActive: true },
     });
   }
 
-  async deactivate(id: string, companyId: string): Promise<void> {
-    const tax = await this.findById(id, companyId);
+  async deactivate({
+    id,
+    companyId,
+  }: {
+    id: string;
+    companyId: string;
+  }): Promise<void> {
+    const tax = await this.findById({ id, companyId });
     tax.isActive = false;
     tax.isDefault = false;
     await this.taxRepository.save(tax);

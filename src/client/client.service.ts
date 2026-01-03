@@ -74,7 +74,7 @@ export class ClientService {
     companyId: string;
     dto: UpdateClientDto;
   }): Promise<ClientEntity> {
-    const client = await this.findById(id, companyId);
+    const client = await this.findById({ id, companyId });
 
     // Check for duplicate email if being changed
     if (dto.email && dto.email !== client.email) {
@@ -102,7 +102,13 @@ export class ClientService {
     return saved;
   }
 
-  async findById(id: string, companyId: string): Promise<ClientEntity> {
+  async findById({
+    id,
+    companyId,
+  }: {
+    id: string;
+    companyId: string;
+  }): Promise<ClientEntity> {
     const client = await this.clientRepository.findOne({
       where: { id, companyId },
     });
@@ -114,10 +120,13 @@ export class ClientService {
     return client;
   }
 
-  async findByExternalId(
-    externalId: string,
-    companyId: string,
-  ): Promise<ClientEntity | null> {
+  async findByExternalId({
+    externalId,
+    companyId,
+  }: {
+    externalId: string;
+    companyId: string;
+  }): Promise<ClientEntity | null> {
     return this.clientRepository.findOne({
       where: { externalId, companyId },
     });
@@ -162,14 +171,26 @@ export class ClientService {
     return createPaginatedResult(data, total, currentPage, itemsPerPage);
   }
 
-  async archive(id: string, companyId: string): Promise<void> {
-    const client = await this.findById(id, companyId);
+  async archive({
+    id,
+    companyId,
+  }: {
+    id: string;
+    companyId: string;
+  }): Promise<void> {
+    const client = await this.findById({ id, companyId });
     client.isActive = false;
     await this.clientRepository.save(client);
     this.logger.log(`Archived client: ${id}`);
   }
 
-  async exists(id: string, companyId: string): Promise<boolean> {
+  async exists({
+    id,
+    companyId,
+  }: {
+    id: string;
+    companyId: string;
+  }): Promise<boolean> {
     const count = await this.clientRepository.count({
       where: { id, companyId },
     });

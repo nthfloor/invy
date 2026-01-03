@@ -2,12 +2,17 @@ import { Module, MiddlewareConsumer, NestModule } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { TerminusModule } from '@nestjs/terminus';
+import { APP_INTERCEPTOR } from '@nestjs/core';
 
 import configuration, { configValidationSchema } from './config/configuration';
 
 // Middleware
 import { CorrelationIdMiddleware } from './shared/middleware/correlation-id.middleware';
 import { RequestLoggerMiddleware } from './shared/middleware/request-logger.middleware';
+
+// Shared Modules
+import { IdempotencyModule } from './shared/idempotency/idempotency.module';
+import { IdempotencyInterceptor } from './shared/interceptors/idempotency.interceptor';
 
 // Feature Modules
 import { HealthModule } from './health/health.module';
@@ -54,6 +59,9 @@ import { BlnkModule } from './blnk/blnk.module';
     TerminusModule,
     HealthModule,
 
+    // Shared modules
+    IdempotencyModule,
+
     // Feature modules
     CompanyModule,
     ClientModule,
@@ -69,7 +77,13 @@ import { BlnkModule } from './blnk/blnk.module';
     BlnkModule,
   ],
   controllers: [],
-  providers: [],
+  providers: [
+    // Global interceptor for idempotency support
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: IdempotencyInterceptor,
+    },
+  ],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

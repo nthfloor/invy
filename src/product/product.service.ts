@@ -61,7 +61,7 @@ export class ProductService {
     companyId: string;
     dto: UpdateProductDto;
   }): Promise<ProductEntity> {
-    const product = await this.findById(id, companyId);
+    const product = await this.findById({ id, companyId });
 
     if (dto.name !== undefined) product.name = dto.name;
     if (dto.description !== undefined) product.description = dto.description;
@@ -76,7 +76,13 @@ export class ProductService {
     return saved;
   }
 
-  async findById(id: string, companyId: string): Promise<ProductEntity> {
+  async findById({
+    id,
+    companyId,
+  }: {
+    id: string;
+    companyId: string;
+  }): Promise<ProductEntity> {
     const product = await this.productRepository.findOne({
       where: { id, companyId },
       relations: ['tax'],
@@ -129,8 +135,14 @@ export class ProductService {
     return createPaginatedResult(data, total, currentPage, itemsPerPage);
   }
 
-  async archive(id: string, companyId: string): Promise<void> {
-    const product = await this.findById(id, companyId);
+  async archive({
+    id,
+    companyId,
+  }: {
+    id: string;
+    companyId: string;
+  }): Promise<void> {
+    const product = await this.findById({ id, companyId });
     product.isActive = false;
     await this.productRepository.save(product);
     this.logger.log(`Archived product: ${id}`);

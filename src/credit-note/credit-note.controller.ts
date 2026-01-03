@@ -35,6 +35,7 @@ import type { CreditNoteStatus } from './credit-note.entity';
 import { ApiTokenGuard } from '../shared/auth/api-token.guard';
 import { PdfService } from '../shared/pdf/pdf.service';
 import { CompanyService } from '../company/company.service';
+import { Idempotent } from '../shared/decorators/idempotent.decorator';
 
 @ApiTags('Credit Notes')
 @ApiBearerAuth()
@@ -48,6 +49,7 @@ export class CreditNoteController {
   ) {}
 
   @Post()
+  @Idempotent()
   @ApiOperation({ summary: 'Create a new credit note' })
   @ApiResponse({ status: 201, description: 'Credit note created successfully' })
   @ApiResponse({ status: 400, description: 'Invalid input' })
@@ -104,6 +106,7 @@ export class CreditNoteController {
   }
 
   @Put(':id')
+  @Idempotent()
   @ApiOperation({ summary: 'Update credit note (draft only)' })
   @ApiQuery({ name: 'companyId', required: true, type: String })
   @ApiResponse({ status: 200, description: 'Credit note updated successfully' })
@@ -124,6 +127,7 @@ export class CreditNoteController {
   }
 
   @Post(':id/issue')
+  @Idempotent()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Issue the credit note' })
   @ApiQuery({ name: 'companyId', required: true, type: String })
@@ -140,6 +144,7 @@ export class CreditNoteController {
   }
 
   @Post(':id/apply')
+  @Idempotent()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Apply credit note to an invoice' })
   @ApiQuery({ name: 'companyId', required: true, type: String })
@@ -157,6 +162,7 @@ export class CreditNoteController {
   }
 
   @Delete(':id')
+  @Idempotent()
   @ApiOperation({ summary: 'Void a credit note' })
   @ApiQuery({ name: 'companyId', required: true, type: String })
   @ApiResponse({ status: 200, description: 'Credit note voided' })
@@ -174,6 +180,7 @@ export class CreditNoteController {
 
   // Item management
   @Post(':id/items')
+  @Idempotent()
   @ApiOperation({ summary: 'Add item to credit note (draft only)' })
   @ApiQuery({ name: 'companyId', required: true, type: String })
   addItem(
@@ -188,6 +195,7 @@ export class CreditNoteController {
   }
 
   @Put(':id/items/:itemId')
+  @Idempotent()
   @ApiOperation({ summary: 'Update credit note item (draft only)' })
   @ApiQuery({ name: 'companyId', required: true, type: String })
   updateItem(
@@ -208,6 +216,7 @@ export class CreditNoteController {
   }
 
   @Delete(':id/items/:itemId')
+  @Idempotent()
   @ApiOperation({ summary: 'Remove item from credit note (draft only)' })
   @ApiQuery({ name: 'companyId', required: true, type: String })
   removeItem(

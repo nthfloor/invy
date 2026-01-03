@@ -33,6 +33,7 @@ import type { InvoiceStatus } from './invoice.entity';
 import { ApiTokenGuard } from '../shared/auth/api-token.guard';
 import { PdfService } from '../shared/pdf/pdf.service';
 import { CompanyService } from '../company/company.service';
+import { Idempotent } from '../shared/decorators/idempotent.decorator';
 
 @ApiTags('Invoices')
 @ApiBearerAuth()
@@ -46,6 +47,7 @@ export class InvoiceController {
   ) {}
 
   @Post()
+  @Idempotent()
   @ApiOperation({ summary: 'Create a new invoice with items' })
   @ApiResponse({ status: 201, description: 'Invoice created successfully' })
   @ApiResponse({ status: 400, description: 'Invalid input' })
@@ -103,10 +105,11 @@ export class InvoiceController {
     if (!companyId) {
       throw new BadRequestException('companyId is required');
     }
-    return this.invoiceService.findById(id, companyId);
+    return this.invoiceService.findById({ id, companyId });
   }
 
   @Put(':id')
+  @Idempotent()
   @ApiOperation({ summary: 'Update invoice header (draft only)' })
   @ApiQuery({ name: 'companyId', required: true, type: String })
   @ApiResponse({ status: 200, description: 'Invoice updated successfully' })
@@ -124,6 +127,7 @@ export class InvoiceController {
   }
 
   @Post(':id/send')
+  @Idempotent()
   @ApiOperation({ summary: 'Mark invoice as sent' })
   @ApiQuery({ name: 'companyId', required: true, type: String })
   @ApiResponse({ status: 200, description: 'Invoice marked as sent' })
@@ -135,10 +139,11 @@ export class InvoiceController {
     if (!companyId) {
       throw new BadRequestException('companyId is required');
     }
-    return this.invoiceService.markAsSent(id, companyId);
+    return this.invoiceService.markAsSent({ id, companyId });
   }
 
   @Post(':id/viewed')
+  @Idempotent()
   @ApiOperation({ summary: 'Mark invoice as viewed' })
   @ApiQuery({ name: 'companyId', required: true, type: String })
   markAsViewed(
@@ -148,10 +153,11 @@ export class InvoiceController {
     if (!companyId) {
       throw new BadRequestException('companyId is required');
     }
-    return this.invoiceService.markAsViewed(id, companyId);
+    return this.invoiceService.markAsViewed({ id, companyId });
   }
 
   @Post(':id/payment')
+  @Idempotent()
   @ApiOperation({ summary: 'Record a payment on the invoice' })
   @ApiQuery({ name: 'companyId', required: true, type: String })
   @ApiResponse({ status: 200, description: 'Payment recorded' })
@@ -183,10 +189,11 @@ export class InvoiceController {
     if (!companyId) {
       throw new BadRequestException('companyId is required');
     }
-    return this.invoiceService.recalculateTotals(id, companyId);
+    return this.invoiceService.recalculateTotals({ id, companyId });
   }
 
   @Delete(':id')
+  @Idempotent()
   @ApiOperation({ summary: 'Cancel an invoice' })
   @ApiQuery({ name: 'companyId', required: true, type: String })
   @ApiResponse({ status: 200, description: 'Invoice cancelled' })
@@ -204,6 +211,7 @@ export class InvoiceController {
 
   // Item management
   @Post(':id/items')
+  @Idempotent()
   @ApiOperation({ summary: 'Add item to invoice (draft only)' })
   @ApiQuery({ name: 'companyId', required: true, type: String })
   addItem(
@@ -218,6 +226,7 @@ export class InvoiceController {
   }
 
   @Put(':id/items/:itemId')
+  @Idempotent()
   @ApiOperation({ summary: 'Update invoice item (draft only)' })
   @ApiQuery({ name: 'companyId', required: true, type: String })
   updateItem(
@@ -238,6 +247,7 @@ export class InvoiceController {
   }
 
   @Delete(':id/items/:itemId')
+  @Idempotent()
   @ApiOperation({ summary: 'Remove item from invoice (draft only)' })
   @ApiQuery({ name: 'companyId', required: true, type: String })
   removeItem(
@@ -274,7 +284,7 @@ export class InvoiceController {
       throw new BadRequestException('companyId is required');
     }
 
-    const invoice = await this.invoiceService.findById(id, companyId);
+    const invoice = await this.invoiceService.findById({ id, companyId });
     const company = await this.companyService.findById(companyId);
 
     const pdfBuffer = await this.pdfService.generateInvoicePdf(

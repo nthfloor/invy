@@ -70,10 +70,10 @@ export class QuoteService {
     const company = await this.companyService.findById(dto.companyId);
 
     // Validate client exists
-    const clientExists = await this.clientService.exists(
-      dto.clientId,
-      dto.companyId,
-    );
+    const clientExists = await this.clientService.exists({
+      id: dto.clientId,
+      companyId: dto.companyId,
+    });
     if (!clientExists) {
       throw new BadRequestException(
         `Client with ID ${dto.clientId} not found in this company`,
@@ -132,7 +132,10 @@ export class QuoteService {
     await this.itemRepository.save(items);
 
     // Calculate totals
-    return this.recalculateTotals(savedQuote.id, dto.companyId);
+    return this.recalculateTotals({
+      id: savedQuote.id,
+      companyId: dto.companyId,
+    });
   }
 
   private createQuoteItem({
@@ -162,8 +165,14 @@ export class QuoteService {
     });
   }
 
-  async recalculateTotals(id: string, companyId: string): Promise<QuoteEntity> {
-    const quote = await this.findById(id, companyId);
+  async recalculateTotals({
+    id,
+    companyId,
+  }: {
+    id: string;
+    companyId: string;
+  }): Promise<QuoteEntity> {
+    const quote = await this.findById({ id, companyId });
 
     const items = await this.itemRepository.find({
       where: { quoteId: id },
@@ -195,7 +204,7 @@ export class QuoteService {
     companyId: string;
     dto: UpdateQuoteDto;
   }): Promise<QuoteEntity> {
-    const quote = await this.findById(id, companyId);
+    const quote = await this.findById({ id, companyId });
 
     // Only draft quotes can be edited
     if (quote.status !== 'draft') {
@@ -215,15 +224,33 @@ export class QuoteService {
     return saved;
   }
 
-  async markAsSent(id: string, companyId: string): Promise<QuoteEntity> {
+  async markAsSent({
+    id,
+    companyId,
+  }: {
+    id: string;
+    companyId: string;
+  }): Promise<QuoteEntity> {
     return this.transitionStatus({ id, companyId, newStatus: 'sent' });
   }
 
-  async markAsViewed(id: string, companyId: string): Promise<QuoteEntity> {
+  async markAsViewed({
+    id,
+    companyId,
+  }: {
+    id: string;
+    companyId: string;
+  }): Promise<QuoteEntity> {
     return this.transitionStatus({ id, companyId, newStatus: 'viewed' });
   }
 
-  async accept(id: string, companyId: string): Promise<QuoteEntity> {
+  async accept({
+    id,
+    companyId,
+  }: {
+    id: string;
+    companyId: string;
+  }): Promise<QuoteEntity> {
     return this.transitionStatus({ id, companyId, newStatus: 'accepted' });
   }
 
@@ -236,7 +263,7 @@ export class QuoteService {
     companyId: string;
     dto: RejectQuoteDto;
   }): Promise<QuoteEntity> {
-    const quote = await this.findById(id, companyId);
+    const quote = await this.findById({ id, companyId });
 
     const validFromStates: QuoteStatus[] = ['draft', 'sent', 'viewed'];
     if (!validFromStates.includes(quote.status)) {
@@ -263,7 +290,7 @@ export class QuoteService {
     companyId: string;
     dto: ConvertToInvoiceDto;
   }): Promise<InvoiceEntity> {
-    const quote = await this.findById(id, companyId);
+    const quote = await this.findById({ id, companyId });
 
     if (quote.status !== 'accepted') {
       throw new BadRequestException(
@@ -421,7 +448,7 @@ export class QuoteService {
     companyId: string;
     newStatus: QuoteStatus;
   }): Promise<QuoteEntity> {
-    const quote = await this.findById(id, companyId);
+    const quote = await this.findById({ id, companyId });
 
     const validTransitions = VALID_QUOTE_TRANSITIONS[quote.status];
     if (!validTransitions.includes(newStatus)) {
@@ -439,7 +466,13 @@ export class QuoteService {
     return saved;
   }
 
-  async findById(id: string, companyId: string): Promise<QuoteEntity> {
+  async findById({
+    id,
+    companyId,
+  }: {
+    id: string;
+    companyId: string;
+  }): Promise<QuoteEntity> {
     const quote = await this.quoteRepository.findOne({
       where: { id, companyId },
       relations: ['items', 'client'],
@@ -517,7 +550,7 @@ export class QuoteService {
     companyId: string;
     dto: CreateQuoteItemDto;
   }): Promise<QuoteEntity> {
-    const quote = await this.findById(quoteId, companyId);
+    const quote = await this.findById({ id: quoteId, companyId });
 
     if (quote.status !== 'draft') {
       throw new BadRequestException(
@@ -536,7 +569,7 @@ export class QuoteService {
     });
     await this.itemRepository.save(item);
 
-    return this.recalculateTotals(quoteId, companyId);
+    return this.recalculateTotals({ id: quoteId, companyId });
   }
 
   async updateItem({
@@ -550,7 +583,7 @@ export class QuoteService {
     companyId: string;
     dto: Partial<CreateQuoteItemDto>;
   }): Promise<QuoteEntity> {
-    const quote = await this.findById(quoteId, companyId);
+    const quote = await this.findById({ id: quoteId, companyId });
 
     if (quote.status !== 'draft') {
       throw new BadRequestException(
@@ -578,7 +611,7 @@ export class QuoteService {
 
     await this.itemRepository.save(item);
 
-    return this.recalculateTotals(quoteId, companyId);
+    return this.recalculateTotals({ id: quoteId, companyId });
   }
 
   async removeItem({
@@ -590,7 +623,7 @@ export class QuoteService {
     itemId: string;
     companyId: string;
   }): Promise<QuoteEntity> {
-    const quote = await this.findById(quoteId, companyId);
+    const quote = await this.findById({ id: quoteId, companyId });
 
     if (quote.status !== 'draft') {
       throw new BadRequestException(
@@ -608,6 +641,6 @@ export class QuoteService {
 
     await this.itemRepository.remove(item);
 
-    return this.recalculateTotals(quoteId, companyId);
+    return this.recalculateTotals({ id: quoteId, companyId });
   }
 }

@@ -50,10 +50,10 @@ export class CreditNoteService {
     const company = await this.companyService.findById(dto.companyId);
 
     // Validate client exists
-    const clientExists = await this.clientService.exists(
-      dto.clientId,
-      dto.companyId,
-    );
+    const clientExists = await this.clientService.exists({
+      id: dto.clientId,
+      companyId: dto.companyId,
+    });
     if (!clientExists) {
       throw new BadRequestException(
         `Client with ID ${dto.clientId} not found in this company`,
@@ -61,10 +61,10 @@ export class CreditNoteService {
     }
 
     // Validate invoice exists and belongs to this client/company
-    const invoice = await this.invoiceService.findById(
-      dto.invoiceId,
-      dto.companyId,
-    );
+    const invoice = await this.invoiceService.findById({
+      id: dto.invoiceId,
+      companyId: dto.companyId,
+    });
     if (invoice.clientId !== dto.clientId) {
       throw new BadRequestException(
         'Invoice does not belong to the specified client',

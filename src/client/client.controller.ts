@@ -23,6 +23,7 @@ import {
 import { ClientService } from './client.service';
 import { CreateClientDto, UpdateClientDto } from './dto';
 import { ApiTokenGuard } from '../shared/auth/api-token.guard';
+import { Idempotent } from '../shared/decorators/idempotent.decorator';
 
 @ApiTags('Clients')
 @ApiBearerAuth()
@@ -32,6 +33,7 @@ export class ClientController {
   constructor(private readonly clientService: ClientService) {}
 
   @Post()
+  @Idempotent()
   @ApiOperation({ summary: 'Create a new client' })
   @ApiResponse({ status: 201, description: 'Client created successfully' })
   @ApiResponse({ status: 400, description: 'Invalid company ID' })
@@ -70,7 +72,7 @@ export class ClientController {
     if (!companyId) {
       throw new BadRequestException('companyId is required');
     }
-    return this.clientService.findByExternalId(externalId, companyId);
+    return this.clientService.findByExternalId({ externalId, companyId });
   }
 
   @Get(':id')
@@ -85,10 +87,11 @@ export class ClientController {
     if (!companyId) {
       throw new BadRequestException('companyId is required');
     }
-    return this.clientService.findById(id, companyId);
+    return this.clientService.findById({ id, companyId });
   }
 
   @Put(':id')
+  @Idempotent()
   @ApiOperation({ summary: 'Update a client' })
   @ApiQuery({ name: 'companyId', required: true, type: String })
   @ApiResponse({ status: 200, description: 'Client updated successfully' })
@@ -105,6 +108,7 @@ export class ClientController {
   }
 
   @Delete(':id')
+  @Idempotent()
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Archive a client (soft delete)' })
   @ApiQuery({ name: 'companyId', required: true, type: String })
@@ -117,6 +121,6 @@ export class ClientController {
     if (!companyId) {
       throw new BadRequestException('companyId is required');
     }
-    return this.clientService.archive(id, companyId);
+    return this.clientService.archive({ id, companyId });
   }
 }
