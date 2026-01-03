@@ -65,7 +65,9 @@ async function bootstrap() {
   await app.listen(port);
 
   logger.log(`Invy running on port ${port} in ${nodeEnv} mode`);
-  logger.log(`Swagger documentation available at http://localhost:${port}/api/docs`);
+  logger.log(
+    `Swagger documentation available at http://localhost:${port}/api/docs`,
+  );
 }
 
-bootstrap();
+void bootstrap();

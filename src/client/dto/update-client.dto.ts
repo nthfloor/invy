@@ -7,7 +7,7 @@ import {
   IsBoolean,
   MaxLength,
 } from 'class-validator';
-import { ClientAddress } from '../client.entity';
+import type { ClientAddress } from '../client.entity';
 
 export class UpdateClientDto {
   @ApiPropertyOptional({ description: 'Client name', example: 'John Doe' })
@@ -16,7 +16,10 @@ export class UpdateClientDto {
   @MaxLength(255)
   name?: string;
 
-  @ApiPropertyOptional({ description: 'Client email', example: 'john@example.com' })
+  @ApiPropertyOptional({
+    description: 'Client email',
+    example: 'john@example.com',
+  })
   @IsOptional()
   @IsEmail()
   @MaxLength(255)

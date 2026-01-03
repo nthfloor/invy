@@ -107,8 +107,12 @@ export class CompanyService {
     page?: number,
     perPage?: number,
   ): Promise<PaginatedResult<CompanyEntity>> {
-    const { skip, take, page: currentPage, perPage: itemsPerPage } =
-      getPaginationParams(page, perPage);
+    const {
+      skip,
+      take,
+      page: currentPage,
+      perPage: itemsPerPage,
+    } = getPaginationParams(page, perPage);
 
     const [data, total] = await this.companyRepository.findAndCount({
       where: { isActive: true },

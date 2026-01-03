@@ -66,7 +66,10 @@ export class CreateInvoiceDto {
   @IsDateString()
   dueDate?: string;
 
-  @ApiProperty({ description: 'Invoice line items', type: [CreateInvoiceItemDto] })
+  @ApiProperty({
+    description: 'Invoice line items',
+    type: [CreateInvoiceItemDto],
+  })
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => CreateInvoiceItemDto)

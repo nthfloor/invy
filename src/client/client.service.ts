@@ -125,8 +125,12 @@ export class ClientService {
     perPage?: number,
     search?: string,
   ): Promise<PaginatedResult<ClientEntity>> {
-    const { skip, take, page: currentPage, perPage: itemsPerPage } =
-      getPaginationParams(page, perPage);
+    const {
+      skip,
+      take,
+      page: currentPage,
+      perPage: itemsPerPage,
+    } = getPaginationParams(page, perPage);
 
     const queryBuilder = this.clientRepository
       .createQueryBuilder('client')

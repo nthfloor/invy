@@ -195,7 +195,9 @@ export class InvoiceService {
     const invoice = await this.findById(id, companyId);
 
     if (invoice.status === 'cancelled') {
-      throw new BadRequestException('Cannot record payment on cancelled invoice');
+      throw new BadRequestException(
+        'Cannot record payment on cancelled invoice',
+      );
     }
 
     if (invoice.status === 'paid') {
@@ -295,8 +297,12 @@ export class InvoiceService {
     status?: InvoiceStatus,
     clientId?: string,
   ): Promise<PaginatedResult<InvoiceEntity>> {
-    const { skip, take, page: currentPage, perPage: itemsPerPage } =
-      getPaginationParams(page, perPage);
+    const {
+      skip,
+      take,
+      page: currentPage,
+      perPage: itemsPerPage,
+    } = getPaginationParams(page, perPage);
 
     const queryBuilder = this.invoiceRepository
       .createQueryBuilder('invoice')
@@ -332,10 +338,9 @@ export class InvoiceService {
       throw new BadRequestException('Can only add items to draft invoices');
     }
 
-    const maxSortOrder = invoice.items?.reduce(
-      (max, item) => Math.max(max, item.sortOrder),
-      -1,
-    ) ?? -1;
+    const maxSortOrder =
+      invoice.items?.reduce((max, item) => Math.max(max, item.sortOrder), -1) ??
+      -1;
 
     const item = this.createInvoiceItem(invoiceId, dto, maxSortOrder + 1);
     await this.itemRepository.save(item);
@@ -386,7 +391,9 @@ export class InvoiceService {
     const invoice = await this.findById(invoiceId, companyId);
 
     if (invoice.status !== 'draft') {
-      throw new BadRequestException('Can only remove items from draft invoices');
+      throw new BadRequestException(
+        'Can only remove items from draft invoices',
+      );
     }
 
     const item = await this.itemRepository.findOne({

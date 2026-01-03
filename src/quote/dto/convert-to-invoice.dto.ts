@@ -77,8 +77,7 @@ export class AdditionalItemDto {
 
 export class ConvertToInvoiceDto {
   @ApiPropertyOptional({
-    description:
-      'Adjusted items (only for estimates where isFixedPrice=false)',
+    description: 'Adjusted items (only for estimates where isFixedPrice=false)',
     type: [AdjustedItemDto],
   })
   @IsOptional()

@@ -7,7 +7,7 @@ import {
   IsBoolean,
   Length,
 } from 'class-validator';
-import {
+import type {
   CompanyAddress,
   CompanySettings,
   CompanyBranding,

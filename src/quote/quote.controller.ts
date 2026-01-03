@@ -20,7 +20,8 @@ import {
   ApiQuery,
 } from '@nestjs/swagger';
 import { QuoteService } from './quote.service';
-import { QuoteEntity, QuoteStatus, DocumentType } from './quote.entity';
+import { QuoteEntity } from './quote.entity';
+import type { QuoteStatus, DocumentType } from './quote.entity';
 import {
   CreateQuoteDto,
   CreateEstimateDto,
@@ -55,9 +56,25 @@ export class QuoteController {
   @ApiQuery({ name: 'companyId', required: true, type: String })
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'perPage', required: false, type: Number })
-  @ApiQuery({ name: 'status', required: false, enum: ['draft', 'sent', 'viewed', 'accepted', 'rejected', 'expired', 'converted'] })
+  @ApiQuery({
+    name: 'status',
+    required: false,
+    enum: [
+      'draft',
+      'sent',
+      'viewed',
+      'accepted',
+      'rejected',
+      'expired',
+      'converted',
+    ],
+  })
   @ApiQuery({ name: 'clientId', required: false, type: String })
-  @ApiQuery({ name: 'documentType', required: false, enum: ['quote', 'estimate'] })
+  @ApiQuery({
+    name: 'documentType',
+    required: false,
+    enum: ['quote', 'estimate'],
+  })
   @ApiResponse({
     status: 200,
     description: 'Paginated list of quotes/estimates',
@@ -274,7 +291,19 @@ export class EstimateController {
   @ApiQuery({ name: 'companyId', required: true, type: String })
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'perPage', required: false, type: Number })
-  @ApiQuery({ name: 'status', required: false, enum: ['draft', 'sent', 'viewed', 'accepted', 'rejected', 'expired', 'converted'] })
+  @ApiQuery({
+    name: 'status',
+    required: false,
+    enum: [
+      'draft',
+      'sent',
+      'viewed',
+      'accepted',
+      'rejected',
+      'expired',
+      'converted',
+    ],
+  })
   @ApiQuery({ name: 'clientId', required: false, type: String })
   @ApiResponse({
     status: 200,

@@ -7,7 +7,7 @@ import {
   IsUUID,
   MaxLength,
 } from 'class-validator';
-import { ClientAddress } from '../client.entity';
+import type { ClientAddress } from '../client.entity';
 
 export class CreateClientDto {
   @ApiProperty({ description: 'Company ID this client belongs to' })

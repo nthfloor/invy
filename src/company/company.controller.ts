@@ -33,7 +33,10 @@ export class CompanyController {
   @Post()
   @ApiOperation({ summary: 'Create a new company' })
   @ApiResponse({ status: 201, description: 'Company created successfully' })
-  @ApiResponse({ status: 409, description: 'Company with tax ID already exists' })
+  @ApiResponse({
+    status: 409,
+    description: 'Company with tax ID already exists',
+  })
   create(@Body() dto: CreateCompanyDto) {
     return this.companyService.create(dto);
   }
@@ -42,10 +45,7 @@ export class CompanyController {
   @ApiOperation({ summary: 'List all companies' })
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'perPage', required: false, type: Number })
-  findAll(
-    @Query('page') page?: number,
-    @Query('perPage') perPage?: number,
-  ) {
+  findAll(@Query('page') page?: number, @Query('perPage') perPage?: number) {
     return this.companyService.findAll(page, perPage);
   }
 

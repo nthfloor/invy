@@ -8,8 +8,6 @@ import {
   Param,
   Query,
   ParseUUIDPipe,
-  HttpCode,
-  HttpStatus,
   UseGuards,
   BadRequestException,
 } from '@nestjs/common';
@@ -28,7 +26,7 @@ import {
   CreateInvoiceItemDto,
   RecordPaymentDto,
 } from './dto';
-import { InvoiceStatus } from './invoice.entity';
+import type { InvoiceStatus } from './invoice.entity';
 import { ApiTokenGuard } from '../shared/auth/api-token.guard';
 
 @ApiTags('Invoices')
@@ -51,7 +49,19 @@ export class InvoiceController {
   @ApiQuery({ name: 'companyId', required: true, type: String })
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'perPage', required: false, type: Number })
-  @ApiQuery({ name: 'status', required: false, enum: ['draft', 'sent', 'viewed', 'partial', 'paid', 'overdue', 'cancelled'] })
+  @ApiQuery({
+    name: 'status',
+    required: false,
+    enum: [
+      'draft',
+      'sent',
+      'viewed',
+      'partial',
+      'paid',
+      'overdue',
+      'cancelled',
+    ],
+  })
   @ApiQuery({ name: 'clientId', required: false, type: String })
   findAll(
     @Query('companyId') companyId: string,
@@ -63,7 +73,13 @@ export class InvoiceController {
     if (!companyId) {
       throw new BadRequestException('companyId is required');
     }
-    return this.invoiceService.findAll(companyId, page, perPage, status, clientId);
+    return this.invoiceService.findAll(
+      companyId,
+      page,
+      perPage,
+      status,
+      clientId,
+    );
   }
 
   @Get(':id')

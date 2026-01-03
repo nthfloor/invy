@@ -91,8 +91,12 @@ export class ProductService {
     perPage?: number,
     search?: string,
   ): Promise<PaginatedResult<ProductEntity>> {
-    const { skip, take, page: currentPage, perPage: itemsPerPage } =
-      getPaginationParams(page, perPage);
+    const {
+      skip,
+      take,
+      page: currentPage,
+      perPage: itemsPerPage,
+    } = getPaginationParams(page, perPage);
 
     const queryBuilder = this.productRepository
       .createQueryBuilder('product')

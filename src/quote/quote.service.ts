@@ -404,7 +404,9 @@ export class QuoteService {
 
     quote.status = newStatus;
     const saved = await this.quoteRepository.save(quote);
-    this.logger.log(`${quote.documentType} ${id} status changed to ${newStatus}`);
+    this.logger.log(
+      `${quote.documentType} ${id} status changed to ${newStatus}`,
+    );
 
     return saved;
   }

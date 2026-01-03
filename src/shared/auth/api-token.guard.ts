@@ -11,6 +11,7 @@ import { ApiTokenEntity } from '../entities/api-token.entity';
 import { hashToken } from './token.utils';
 
 declare global {
+  // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace Express {
     interface Request {
       authenticated?: boolean;
@@ -31,7 +32,9 @@ export class ApiTokenGuard implements CanActivate {
     const authHeader = request.headers.authorization;
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      throw new UnauthorizedException('Missing or invalid authorization header');
+      throw new UnauthorizedException(
+        'Missing or invalid authorization header',
+      );
     }
 
     const token = authHeader.replace('Bearer ', '').trim();
