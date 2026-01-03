@@ -21,6 +21,8 @@ import { CreditNoteModule } from './credit-note/credit-note.module';
 import { StatsModule } from './stats/stats.module';
 import { PaymentModule } from './payment/payment.module';
 import { StatementModule } from './statement/statement.module';
+import { WorkflowModule } from './workflow/workflow.module';
+import { BlnkModule } from './blnk/blnk.module';
 
 @Module({
   imports: [
@@ -63,6 +65,8 @@ import { StatementModule } from './statement/statement.module';
     StatsModule,
     PaymentModule,
     StatementModule,
+    WorkflowModule,
+    BlnkModule,
   ],
   controllers: [],
   providers: [],

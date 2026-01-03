@@ -36,12 +36,14 @@
     "class-validator": "^0.14.1",
     "helmet": "^8.0.0",
     "joi": "^17.13.3",
+    "opossum": "^9.0.0",
     "pdfmake": "^0.3.0",
     "pg": "^8.13.1",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
     "typeorm": "^0.3.20",
-    "uuid": "^11.0.4"
+    "uuid": "^11.0.4",
+    "xstate": "^5.25.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",
@@ -52,6 +54,7 @@
     "@types/express": "^5.0.0",
     "@types/jest": "^30.0.0",
     "@types/node": "^22.10.7",
+    "@types/opossum": "^8.1.9",
     "@types/pdfmake": "^0.2.12",
     "@types/supertest": "^6.0.2",
     "@types/uuid": "^10.0.0",
