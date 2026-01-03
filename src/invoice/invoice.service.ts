@@ -95,7 +95,11 @@ export class InvoiceService {
 
     // Create items
     const items = dto.items.map((item, index) =>
-      this.createInvoiceItem(savedInvoice.id, item, index),
+      this.createInvoiceItem({
+        invoiceId: savedInvoice.id,
+        dto: item,
+        sortOrder: index,
+      }),
     );
     await this.itemRepository.save(items);
 
@@ -103,11 +107,15 @@ export class InvoiceService {
     return this.recalculateTotals(savedInvoice.id, dto.companyId);
   }
 
-  private createInvoiceItem(
-    invoiceId: string,
-    dto: CreateInvoiceItemDto,
-    sortOrder: number,
-  ): InvoiceItemEntity {
+  private createInvoiceItem({
+    invoiceId,
+    dto,
+    sortOrder,
+  }: {
+    invoiceId: string;
+    dto: CreateInvoiceItemDto;
+    sortOrder: number;
+  }): InvoiceItemEntity {
     const lineTotal = Number(dto.quantity) * Number(dto.unitPrice);
     const taxRate = dto.taxRate || 0;
     const lineTax = lineTotal * (taxRate / 100);
@@ -155,11 +163,15 @@ export class InvoiceService {
     return this.invoiceRepository.save(invoice);
   }
 
-  async update(
-    id: string,
-    companyId: string,
-    dto: UpdateInvoiceDto,
-  ): Promise<InvoiceEntity> {
+  async update({
+    id,
+    companyId,
+    dto,
+  }: {
+    id: string;
+    companyId: string;
+    dto: UpdateInvoiceDto;
+  }): Promise<InvoiceEntity> {
     const invoice = await this.findById(id, companyId);
 
     // Only draft invoices can be edited
@@ -180,18 +192,22 @@ export class InvoiceService {
   }
 
   async markAsSent(id: string, companyId: string): Promise<InvoiceEntity> {
-    return this.transitionStatus(id, companyId, 'sent');
+    return this.transitionStatus({ id, companyId, newStatus: 'sent' });
   }
 
   async markAsViewed(id: string, companyId: string): Promise<InvoiceEntity> {
-    return this.transitionStatus(id, companyId, 'viewed');
+    return this.transitionStatus({ id, companyId, newStatus: 'viewed' });
   }
 
-  async recordPayment(
-    id: string,
-    companyId: string,
-    amount: number,
-  ): Promise<InvoiceEntity> {
+  async recordPayment({
+    id,
+    companyId,
+    amount,
+  }: {
+    id: string;
+    companyId: string;
+    amount: number;
+  }): Promise<InvoiceEntity> {
     const invoice = await this.findById(id, companyId);
 
     if (invoice.status === 'cancelled') {
@@ -225,11 +241,15 @@ export class InvoiceService {
     return saved;
   }
 
-  async cancel(
-    id: string,
-    companyId: string,
-    dto: CancelInvoiceDto,
-  ): Promise<InvoiceEntity> {
+  async cancel({
+    id,
+    companyId,
+    dto,
+  }: {
+    id: string;
+    companyId: string;
+    dto: CancelInvoiceDto;
+  }): Promise<InvoiceEntity> {
     const invoice = await this.findById(id, companyId);
 
     if (invoice.status === 'paid') {
@@ -251,11 +271,15 @@ export class InvoiceService {
     return saved;
   }
 
-  private async transitionStatus(
-    id: string,
-    companyId: string,
-    newStatus: InvoiceStatus,
-  ): Promise<InvoiceEntity> {
+  private async transitionStatus({
+    id,
+    companyId,
+    newStatus,
+  }: {
+    id: string;
+    companyId: string;
+    newStatus: InvoiceStatus;
+  }): Promise<InvoiceEntity> {
     const invoice = await this.findById(id, companyId);
 
     const validTransitions = VALID_INVOICE_TRANSITIONS[invoice.status];
@@ -290,13 +314,19 @@ export class InvoiceService {
     return invoice;
   }
 
-  async findAll(
-    companyId: string,
-    page?: number,
-    perPage?: number,
-    status?: InvoiceStatus,
-    clientId?: string,
-  ): Promise<PaginatedResult<InvoiceEntity>> {
+  async findAll({
+    companyId,
+    page,
+    perPage,
+    status,
+    clientId,
+  }: {
+    companyId: string;
+    page?: number;
+    perPage?: number;
+    status?: InvoiceStatus;
+    clientId?: string;
+  }): Promise<PaginatedResult<InvoiceEntity>> {
     const {
       skip,
       take,
@@ -327,11 +357,15 @@ export class InvoiceService {
   }
 
   // Item management
-  async addItem(
-    invoiceId: string,
-    companyId: string,
-    dto: CreateInvoiceItemDto,
-  ): Promise<InvoiceEntity> {
+  async addItem({
+    invoiceId,
+    companyId,
+    dto,
+  }: {
+    invoiceId: string;
+    companyId: string;
+    dto: CreateInvoiceItemDto;
+  }): Promise<InvoiceEntity> {
     const invoice = await this.findById(invoiceId, companyId);
 
     if (invoice.status !== 'draft') {
@@ -342,18 +376,27 @@ export class InvoiceService {
       invoice.items?.reduce((max, item) => Math.max(max, item.sortOrder), -1) ??
       -1;
 
-    const item = this.createInvoiceItem(invoiceId, dto, maxSortOrder + 1);
+    const item = this.createInvoiceItem({
+      invoiceId,
+      dto,
+      sortOrder: maxSortOrder + 1,
+    });
     await this.itemRepository.save(item);
 
     return this.recalculateTotals(invoiceId, companyId);
   }
 
-  async updateItem(
-    invoiceId: string,
-    itemId: string,
-    companyId: string,
-    dto: Partial<CreateInvoiceItemDto>,
-  ): Promise<InvoiceEntity> {
+  async updateItem({
+    invoiceId,
+    itemId,
+    companyId,
+    dto,
+  }: {
+    invoiceId: string;
+    itemId: string;
+    companyId: string;
+    dto: Partial<CreateInvoiceItemDto>;
+  }): Promise<InvoiceEntity> {
     const invoice = await this.findById(invoiceId, companyId);
 
     if (invoice.status !== 'draft') {
@@ -383,11 +426,15 @@ export class InvoiceService {
     return this.recalculateTotals(invoiceId, companyId);
   }
 
-  async removeItem(
-    invoiceId: string,
-    itemId: string,
-    companyId: string,
-  ): Promise<InvoiceEntity> {
+  async removeItem({
+    invoiceId,
+    itemId,
+    companyId,
+  }: {
+    invoiceId: string;
+    itemId: string;
+    companyId: string;
+  }): Promise<InvoiceEntity> {
     const invoice = await this.findById(invoiceId, companyId);
 
     if (invoice.status !== 'draft') {

@@ -65,11 +65,15 @@ export class ClientService {
     return saved;
   }
 
-  async update(
-    id: string,
-    companyId: string,
-    dto: UpdateClientDto,
-  ): Promise<ClientEntity> {
+  async update({
+    id,
+    companyId,
+    dto,
+  }: {
+    id: string;
+    companyId: string;
+    dto: UpdateClientDto;
+  }): Promise<ClientEntity> {
     const client = await this.findById(id, companyId);
 
     // Check for duplicate email if being changed
@@ -119,12 +123,17 @@ export class ClientService {
     });
   }
 
-  async findAll(
-    companyId: string,
-    page?: number,
-    perPage?: number,
-    search?: string,
-  ): Promise<PaginatedResult<ClientEntity>> {
+  async findAll({
+    companyId,
+    page,
+    perPage,
+    search,
+  }: {
+    companyId: string;
+    page?: number;
+    perPage?: number;
+    search?: string;
+  }): Promise<PaginatedResult<ClientEntity>> {
     const {
       skip,
       take,

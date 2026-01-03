@@ -54,7 +54,7 @@ export class ProductController {
     if (!companyId) {
       throw new BadRequestException('companyId is required');
     }
-    return this.productService.findAll(companyId, page, perPage, search);
+    return this.productService.findAll({ companyId, page, perPage, search });
   }
 
   @Get(':id')
@@ -85,7 +85,7 @@ export class ProductController {
     if (!companyId) {
       throw new BadRequestException('companyId is required');
     }
-    return this.productService.update(id, companyId, dto);
+    return this.productService.update({ id, companyId, dto });
   }
 
   @Delete(':id')

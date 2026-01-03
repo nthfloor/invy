@@ -1,98 +1,113 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Invy - Headless Invoicing Engine
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+## Overview
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+Invy is a standalone, API-first invoicing microservice built with NestJS. Designed for backend-to-backend integration, it provides complete invoicing capabilities without the overhead of a full accounting system.
 
-## Description
+## Why Invy?
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+| Feature | Invy | Invoice Ninja | Stripe Invoicing |
+|---------|------|---------------|------------------|
+| Self-hosted | Yes | Yes | No |
+| API-first design | Yes | Partial | Yes |
+| No UI overhead | Yes | No | Yes |
+| Quote/Estimate support | Yes | Yes | No |
+| Custom branding | Yes | Yes | Limited |
+| Simple auth (API tokens) | Yes | No (requires users) | No |
+| Microservice-ready | Yes | No | No |
 
-## Project setup
+## Key Features
 
-```bash
-$ pnpm install
-```
+- **Companies** - Multi-tenant support with per-company settings
+- **Clients** - Customer management with external ID sync
+- **Products** - Product catalog with tax associations
+- **Taxes** - Configurable tax rates per company
+- **Invoices** - Full lifecycle (draft -> sent -> viewed -> partial -> paid)
+- **Quotes & Estimates** - Fixed-price quotes and variable estimates with conversion to invoices
+- **PDF Generation** - Professional documents with company branding (Phase 2)
 
-## Compile and run the project
+## Quick Start
 
-```bash
-# development
-$ pnpm run start
+### Prerequisites
 
-# watch mode
-$ pnpm run start:dev
+- Node.js 18+
+- PostgreSQL 14+
 
-# production mode
-$ pnpm run start:prod
-```
-
-## Run tests
+### Installation
 
 ```bash
-# unit tests
-$ pnpm run test
-
-# e2e tests
-$ pnpm run test:e2e
-
-# test coverage
-$ pnpm run test:cov
+npm install
 ```
 
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+### Configuration
 
 ```bash
-$ pnpm install -g @nestjs/mau
-$ mau deploy
+cp .env.example .env
+# Edit .env with your database credentials
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+### Database Setup
 
-## Resources
+```bash
+npm run migration:run
+```
 
-Check out a few resources that may come in handy when working with NestJS:
+### Generate API Token
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+```bash
+npm run generate-token "My API Token"
+# Save the generated token - it cannot be retrieved later
+```
 
-## Support
+### Start Server
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+```bash
+npm run start:dev
+```
 
-## Stay in touch
+### API Documentation
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+Once running, visit: http://localhost:3010/api/docs
+
+## API Authentication
+
+All endpoints require Bearer token authentication:
+
+```
+Authorization: Bearer invy_xxxxxxxxxxxx
+```
+
+Generate tokens using the CLI:
+
+```bash
+npm run generate-token "Production API"
+npm run generate-token "Staging API"
+```
+
+Tokens are hashed before storage - save them immediately as they cannot be retrieved later.
+
+## Scripts
+
+```bash
+npm run start:dev       # Development with hot reload
+npm run start:prod      # Production mode
+npm run build           # Build for production
+npm run lint            # Run ESLint
+npm run test            # Unit tests
+npm run test:e2e        # End-to-end tests
+npm run generate-token  # Generate API token
+npm run migration:run   # Run migrations
+npm run migration:generate  # Generate migration
+```
+
+## Architecture
+
+Invy is designed as a standalone microservice that can integrate with other services via:
+
+- **REST API** - Primary interface for all operations
+- **Webhooks** - Event notifications (Phase 4)
+- **Message queues** - RabbitMQ integration for async operations (Phase 5)
 
 ## License
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+Proprietary - Nathan Floor

@@ -53,11 +53,15 @@ export class TaxService {
     return saved;
   }
 
-  async update(
-    id: string,
-    companyId: string,
-    dto: UpdateTaxDto,
-  ): Promise<TaxEntity> {
+  async update({
+    id,
+    companyId,
+    dto,
+  }: {
+    id: string;
+    companyId: string;
+    dto: UpdateTaxDto;
+  }): Promise<TaxEntity> {
     const tax = await this.findById(id, companyId);
 
     if (dto.name !== undefined) tax.name = dto.name;

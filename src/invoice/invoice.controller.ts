@@ -73,13 +73,13 @@ export class InvoiceController {
     if (!companyId) {
       throw new BadRequestException('companyId is required');
     }
-    return this.invoiceService.findAll(
+    return this.invoiceService.findAll({
       companyId,
       page,
       perPage,
       status,
       clientId,
-    );
+    });
   }
 
   @Get(':id')
@@ -111,7 +111,7 @@ export class InvoiceController {
     if (!companyId) {
       throw new BadRequestException('companyId is required');
     }
-    return this.invoiceService.update(id, companyId, dto);
+    return this.invoiceService.update({ id, companyId, dto });
   }
 
   @Post(':id/send')
@@ -157,7 +157,11 @@ export class InvoiceController {
     if (!dto.amount || dto.amount <= 0) {
       throw new BadRequestException('Payment amount must be greater than 0');
     }
-    return this.invoiceService.recordPayment(id, companyId, dto.amount);
+    return this.invoiceService.recordPayment({
+      id,
+      companyId,
+      amount: dto.amount,
+    });
   }
 
   @Post(':id/recalculate')
@@ -186,7 +190,7 @@ export class InvoiceController {
     if (!companyId) {
       throw new BadRequestException('companyId is required');
     }
-    return this.invoiceService.cancel(id, companyId, dto);
+    return this.invoiceService.cancel({ id, companyId, dto });
   }
 
   // Item management
@@ -201,7 +205,7 @@ export class InvoiceController {
     if (!companyId) {
       throw new BadRequestException('companyId is required');
     }
-    return this.invoiceService.addItem(id, companyId, dto);
+    return this.invoiceService.addItem({ invoiceId: id, companyId, dto });
   }
 
   @Put(':id/items/:itemId')
@@ -216,7 +220,12 @@ export class InvoiceController {
     if (!companyId) {
       throw new BadRequestException('companyId is required');
     }
-    return this.invoiceService.updateItem(id, itemId, companyId, dto);
+    return this.invoiceService.updateItem({
+      invoiceId: id,
+      itemId,
+      companyId,
+      dto,
+    });
   }
 
   @Delete(':id/items/:itemId')
@@ -230,6 +239,6 @@ export class InvoiceController {
     if (!companyId) {
       throw new BadRequestException('companyId is required');
     }
-    return this.invoiceService.removeItem(id, itemId, companyId);
+    return this.invoiceService.removeItem({ invoiceId: id, itemId, companyId });
   }
 }

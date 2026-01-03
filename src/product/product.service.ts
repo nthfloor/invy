@@ -52,11 +52,15 @@ export class ProductService {
     return saved;
   }
 
-  async update(
-    id: string,
-    companyId: string,
-    dto: UpdateProductDto,
-  ): Promise<ProductEntity> {
+  async update({
+    id,
+    companyId,
+    dto,
+  }: {
+    id: string;
+    companyId: string;
+    dto: UpdateProductDto;
+  }): Promise<ProductEntity> {
     const product = await this.findById(id, companyId);
 
     if (dto.name !== undefined) product.name = dto.name;
@@ -85,12 +89,17 @@ export class ProductService {
     return product;
   }
 
-  async findAll(
-    companyId: string,
-    page?: number,
-    perPage?: number,
-    search?: string,
-  ): Promise<PaginatedResult<ProductEntity>> {
+  async findAll({
+    companyId,
+    page,
+    perPage,
+    search,
+  }: {
+    companyId: string;
+    page?: number;
+    perPage?: number;
+    search?: string;
+  }): Promise<PaginatedResult<ProductEntity>> {
     const {
       skip,
       take,

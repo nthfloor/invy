@@ -77,7 +77,7 @@ export class TaxController {
     if (!companyId) {
       throw new BadRequestException('companyId is required');
     }
-    return this.taxService.update(id, companyId, dto);
+    return this.taxService.update({ id, companyId, dto });
   }
 
   @Put(':id/default')

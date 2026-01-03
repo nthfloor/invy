@@ -50,18 +50,22 @@ export class QuoteService {
   ) {}
 
   async createQuote(dto: CreateQuoteDto): Promise<QuoteEntity> {
-    return this.create(dto, 'quote', true);
+    return this.create({ dto, documentType: 'quote', isFixedPrice: true });
   }
 
   async createEstimate(dto: CreateQuoteDto): Promise<QuoteEntity> {
-    return this.create(dto, 'estimate', false);
+    return this.create({ dto, documentType: 'estimate', isFixedPrice: false });
   }
 
-  private async create(
-    dto: CreateQuoteDto,
-    documentType: DocumentType,
-    isFixedPrice: boolean,
-  ): Promise<QuoteEntity> {
+  private async create({
+    dto,
+    documentType,
+    isFixedPrice,
+  }: {
+    dto: CreateQuoteDto;
+    documentType: DocumentType;
+    isFixedPrice: boolean;
+  }): Promise<QuoteEntity> {
     // Validate company exists and get settings
     const company = await this.companyService.findById(dto.companyId);
 
@@ -119,7 +123,11 @@ export class QuoteService {
 
     // Create items
     const items = dto.items.map((item, index) =>
-      this.createQuoteItem(savedQuote.id, item, index),
+      this.createQuoteItem({
+        quoteId: savedQuote.id,
+        dto: item,
+        sortOrder: index,
+      }),
     );
     await this.itemRepository.save(items);
 
@@ -127,11 +135,15 @@ export class QuoteService {
     return this.recalculateTotals(savedQuote.id, dto.companyId);
   }
 
-  private createQuoteItem(
-    quoteId: string,
-    dto: CreateQuoteItemDto,
-    sortOrder: number,
-  ): QuoteItemEntity {
+  private createQuoteItem({
+    quoteId,
+    dto,
+    sortOrder,
+  }: {
+    quoteId: string;
+    dto: CreateQuoteItemDto;
+    sortOrder: number;
+  }): QuoteItemEntity {
     const lineTotal = Number(dto.quantity) * Number(dto.unitPrice);
     const taxRate = dto.taxRate || 0;
     const lineTax = lineTotal * (taxRate / 100);
@@ -174,11 +186,15 @@ export class QuoteService {
     return this.quoteRepository.save(quote);
   }
 
-  async update(
-    id: string,
-    companyId: string,
-    dto: UpdateQuoteDto,
-  ): Promise<QuoteEntity> {
+  async update({
+    id,
+    companyId,
+    dto,
+  }: {
+    id: string;
+    companyId: string;
+    dto: UpdateQuoteDto;
+  }): Promise<QuoteEntity> {
     const quote = await this.findById(id, companyId);
 
     // Only draft quotes can be edited
@@ -200,22 +216,26 @@ export class QuoteService {
   }
 
   async markAsSent(id: string, companyId: string): Promise<QuoteEntity> {
-    return this.transitionStatus(id, companyId, 'sent');
+    return this.transitionStatus({ id, companyId, newStatus: 'sent' });
   }
 
   async markAsViewed(id: string, companyId: string): Promise<QuoteEntity> {
-    return this.transitionStatus(id, companyId, 'viewed');
+    return this.transitionStatus({ id, companyId, newStatus: 'viewed' });
   }
 
   async accept(id: string, companyId: string): Promise<QuoteEntity> {
-    return this.transitionStatus(id, companyId, 'accepted');
+    return this.transitionStatus({ id, companyId, newStatus: 'accepted' });
   }
 
-  async reject(
-    id: string,
-    companyId: string,
-    dto: RejectQuoteDto,
-  ): Promise<QuoteEntity> {
+  async reject({
+    id,
+    companyId,
+    dto,
+  }: {
+    id: string;
+    companyId: string;
+    dto: RejectQuoteDto;
+  }): Promise<QuoteEntity> {
     const quote = await this.findById(id, companyId);
 
     const validFromStates: QuoteStatus[] = ['draft', 'sent', 'viewed'];
@@ -234,11 +254,15 @@ export class QuoteService {
     return saved;
   }
 
-  async convertToInvoice(
-    id: string,
-    companyId: string,
-    dto: ConvertToInvoiceDto,
-  ): Promise<InvoiceEntity> {
+  async convertToInvoice({
+    id,
+    companyId,
+    dto,
+  }: {
+    id: string;
+    companyId: string;
+    dto: ConvertToInvoiceDto;
+  }): Promise<InvoiceEntity> {
     const quote = await this.findById(id, companyId);
 
     if (quote.status !== 'accepted') {
@@ -388,11 +412,15 @@ export class QuoteService {
     return savedInvoice;
   }
 
-  private async transitionStatus(
-    id: string,
-    companyId: string,
-    newStatus: QuoteStatus,
-  ): Promise<QuoteEntity> {
+  private async transitionStatus({
+    id,
+    companyId,
+    newStatus,
+  }: {
+    id: string;
+    companyId: string;
+    newStatus: QuoteStatus;
+  }): Promise<QuoteEntity> {
     const quote = await this.findById(id, companyId);
 
     const validTransitions = VALID_QUOTE_TRANSITIONS[quote.status];
@@ -429,14 +457,21 @@ export class QuoteService {
     return quote;
   }
 
-  async findAll(
-    companyId: string,
-    page?: number,
-    perPage?: number,
-    status?: QuoteStatus,
-    clientId?: string,
-    documentType?: DocumentType,
-  ): Promise<PaginatedResult<QuoteEntity>> {
+  async findAll({
+    companyId,
+    page,
+    perPage,
+    status,
+    clientId,
+    documentType,
+  }: {
+    companyId: string;
+    page?: number;
+    perPage?: number;
+    status?: QuoteStatus;
+    clientId?: string;
+    documentType?: DocumentType;
+  }): Promise<PaginatedResult<QuoteEntity>> {
     const {
       skip,
       take,
@@ -473,11 +508,15 @@ export class QuoteService {
   }
 
   // Item management
-  async addItem(
-    quoteId: string,
-    companyId: string,
-    dto: CreateQuoteItemDto,
-  ): Promise<QuoteEntity> {
+  async addItem({
+    quoteId,
+    companyId,
+    dto,
+  }: {
+    quoteId: string;
+    companyId: string;
+    dto: CreateQuoteItemDto;
+  }): Promise<QuoteEntity> {
     const quote = await this.findById(quoteId, companyId);
 
     if (quote.status !== 'draft') {
@@ -490,18 +529,27 @@ export class QuoteService {
       quote.items?.reduce((max, item) => Math.max(max, item.sortOrder), -1) ??
       -1;
 
-    const item = this.createQuoteItem(quoteId, dto, maxSortOrder + 1);
+    const item = this.createQuoteItem({
+      quoteId,
+      dto,
+      sortOrder: maxSortOrder + 1,
+    });
     await this.itemRepository.save(item);
 
     return this.recalculateTotals(quoteId, companyId);
   }
 
-  async updateItem(
-    quoteId: string,
-    itemId: string,
-    companyId: string,
-    dto: Partial<CreateQuoteItemDto>,
-  ): Promise<QuoteEntity> {
+  async updateItem({
+    quoteId,
+    itemId,
+    companyId,
+    dto,
+  }: {
+    quoteId: string;
+    itemId: string;
+    companyId: string;
+    dto: Partial<CreateQuoteItemDto>;
+  }): Promise<QuoteEntity> {
     const quote = await this.findById(quoteId, companyId);
 
     if (quote.status !== 'draft') {
@@ -533,11 +581,15 @@ export class QuoteService {
     return this.recalculateTotals(quoteId, companyId);
   }
 
-  async removeItem(
-    quoteId: string,
-    itemId: string,
-    companyId: string,
-  ): Promise<QuoteEntity> {
+  async removeItem({
+    quoteId,
+    itemId,
+    companyId,
+  }: {
+    quoteId: string;
+    itemId: string;
+    companyId: string;
+  }): Promise<QuoteEntity> {
     const quote = await this.findById(quoteId, companyId);
 
     if (quote.status !== 'draft') {

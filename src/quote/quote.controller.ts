@@ -87,14 +87,14 @@ export class QuoteController {
     @Query('clientId') clientId?: string,
     @Query('documentType') documentType?: DocumentType,
   ): Promise<PaginatedResult<QuoteEntity>> {
-    return this.quoteService.findAll(
+    return this.quoteService.findAll({
       companyId,
       page,
       perPage,
       status,
       clientId,
       documentType,
-    );
+    });
   }
 
   @Get(':id')
@@ -128,7 +128,7 @@ export class QuoteController {
     @Query('companyId', ParseUUIDPipe) companyId: string,
     @Body() dto: UpdateQuoteDto,
   ): Promise<QuoteEntity> {
-    return this.quoteService.update(id, companyId, dto);
+    return this.quoteService.update({ id, companyId, dto });
   }
 
   @Post(':id/send')
@@ -189,7 +189,7 @@ export class QuoteController {
     @Query('companyId', ParseUUIDPipe) companyId: string,
     @Body() dto: RejectQuoteDto,
   ): Promise<QuoteEntity> {
-    return this.quoteService.reject(id, companyId, dto);
+    return this.quoteService.reject({ id, companyId, dto });
   }
 
   @Post(':id/convert')
@@ -213,7 +213,7 @@ export class QuoteController {
     @Query('companyId', ParseUUIDPipe) companyId: string,
     @Body() dto: ConvertToInvoiceDto,
   ): Promise<InvoiceEntity> {
-    return this.quoteService.convertToInvoice(id, companyId, dto);
+    return this.quoteService.convertToInvoice({ id, companyId, dto });
   }
 
   // Item management
@@ -233,7 +233,7 @@ export class QuoteController {
     @Query('companyId', ParseUUIDPipe) companyId: string,
     @Body() dto: CreateQuoteItemDto,
   ): Promise<QuoteEntity> {
-    return this.quoteService.addItem(id, companyId, dto);
+    return this.quoteService.addItem({ quoteId: id, companyId, dto });
   }
 
   @Put(':id/items/:itemId')
@@ -249,7 +249,12 @@ export class QuoteController {
     @Query('companyId', ParseUUIDPipe) companyId: string,
     @Body() dto: Partial<CreateQuoteItemDto>,
   ): Promise<QuoteEntity> {
-    return this.quoteService.updateItem(id, itemId, companyId, dto);
+    return this.quoteService.updateItem({
+      quoteId: id,
+      itemId,
+      companyId,
+      dto,
+    });
   }
 
   @Delete(':id/items/:itemId')
@@ -264,7 +269,7 @@ export class QuoteController {
     @Param('itemId', ParseUUIDPipe) itemId: string,
     @Query('companyId', ParseUUIDPipe) companyId: string,
   ): Promise<QuoteEntity> {
-    return this.quoteService.removeItem(id, itemId, companyId);
+    return this.quoteService.removeItem({ quoteId: id, itemId, companyId });
   }
 }
 
@@ -316,13 +321,13 @@ export class EstimateController {
     @Query('status') status?: QuoteStatus,
     @Query('clientId') clientId?: string,
   ): Promise<PaginatedResult<QuoteEntity>> {
-    return this.quoteService.findAll(
+    return this.quoteService.findAll({
       companyId,
       page,
       perPage,
       status,
       clientId,
-      'estimate',
-    );
+      documentType: 'estimate',
+    });
   }
 }

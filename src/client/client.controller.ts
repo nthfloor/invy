@@ -55,7 +55,7 @@ export class ClientController {
     if (!companyId) {
       throw new BadRequestException('companyId is required');
     }
-    return this.clientService.findAll(companyId, page, perPage, search);
+    return this.clientService.findAll({ companyId, page, perPage, search });
   }
 
   @Get('external/:externalId')
@@ -101,7 +101,7 @@ export class ClientController {
     if (!companyId) {
       throw new BadRequestException('companyId is required');
     }
-    return this.clientService.update(id, companyId, dto);
+    return this.clientService.update({ id, companyId, dto });
   }
 
   @Delete(':id')
