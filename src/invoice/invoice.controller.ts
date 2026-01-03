@@ -7,6 +7,7 @@ import {
   Body,
   Param,
   Query,
+  Res,
   ParseUUIDPipe,
   UseGuards,
   BadRequestException,
@@ -17,7 +18,9 @@ import {
   ApiResponse,
   ApiBearerAuth,
   ApiQuery,
+  ApiProduces,
 } from '@nestjs/swagger';
+import type { Response } from 'express';
 import { InvoiceService } from './invoice.service';
 import {
   CreateInvoiceDto,
@@ -28,13 +31,19 @@ import {
 } from './dto';
 import type { InvoiceStatus } from './invoice.entity';
 import { ApiTokenGuard } from '../shared/auth/api-token.guard';
+import { PdfService } from '../shared/pdf/pdf.service';
+import { CompanyService } from '../company/company.service';
 
 @ApiTags('Invoices')
 @ApiBearerAuth()
 @UseGuards(ApiTokenGuard)
 @Controller('invoices')
 export class InvoiceController {
-  constructor(private readonly invoiceService: InvoiceService) {}
+  constructor(
+    private readonly invoiceService: InvoiceService,
+    private readonly pdfService: PdfService,
+    private readonly companyService: CompanyService,
+  ) {}
 
   @Post()
   @ApiOperation({ summary: 'Create a new invoice with items' })
@@ -240,5 +249,48 @@ export class InvoiceController {
       throw new BadRequestException('companyId is required');
     }
     return this.invoiceService.removeItem({ invoiceId: id, itemId, companyId });
+  }
+
+  // PDF Generation
+  @Get(':id/pdf')
+  @ApiOperation({ summary: 'Generate PDF for invoice' })
+  @ApiQuery({ name: 'companyId', required: true, type: String })
+  @ApiQuery({
+    name: 'download',
+    required: false,
+    type: Boolean,
+    description: 'Set to true to download as attachment',
+  })
+  @ApiProduces('application/pdf')
+  @ApiResponse({ status: 200, description: 'PDF generated successfully' })
+  @ApiResponse({ status: 404, description: 'Invoice not found' })
+  async generatePdf(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Query('companyId') companyId: string,
+    @Query('download') download: string,
+    @Res() res: Response,
+  ) {
+    if (!companyId) {
+      throw new BadRequestException('companyId is required');
+    }
+
+    const invoice = await this.invoiceService.findById(id, companyId);
+    const company = await this.companyService.findById(companyId);
+
+    const pdfBuffer = await this.pdfService.generateInvoicePdf(
+      invoice,
+      company,
+    );
+
+    const filename = `${invoice.invoiceNumber}.pdf`;
+    const disposition = download === 'true' ? 'attachment' : 'inline';
+
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': `${disposition}; filename="${filename}"`,
+      'Content-Length': pdfBuffer.length,
+    });
+
+    res.end(pdfBuffer);
   }
 }
