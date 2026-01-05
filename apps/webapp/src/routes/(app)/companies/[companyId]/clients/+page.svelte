@@ -1,7 +1,10 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import { clientsApi, type Client } from '$lib/api/client';
+	import ConfirmDeleteModal from '$lib/components/ConfirmDeleteModal.svelte';
+	import ErrorState from '$lib/components/ErrorState.svelte';
 
 	let companyId = $derived($page.params.companyId);
 
@@ -9,22 +12,16 @@
 	let loading = $state(true);
 	let error = $state<string | null>(null);
 	let searchQuery = $state('');
-	let showCreateModal = $state(false);
-	let editingClient = $state<Client | null>(null);
 
-	// Form state
-	let formData = $state({
-		name: '',
-		email: '',
-		phone: '',
-		notes: ''
-	});
+	let showDeleteModal = $state(false);
+	let clientToDelete = $state<Client | null>(null);
 
 	onMount(async () => {
 		await loadClients();
 	});
 
 	async function loadClients() {
+		if (!companyId) return;
 		loading = true;
 		error = null;
 		try {
@@ -32,76 +29,21 @@
 			clients = result.data;
 		} catch (e) {
 			error = e instanceof Error ? e.message : 'Failed to load clients';
-			// Demo data for when API is unavailable
-			clients = [
-				{
-					id: 'client-1',
-					companyId,
-					name: 'John Smith',
-					email: 'john.smith@example.com',
-					phone: '+27 82 123 4567',
-					isActive: true,
-					createdAt: new Date().toISOString(),
-					updatedAt: new Date().toISOString()
-				},
-				{
-					id: 'client-2',
-					companyId,
-					name: 'Sarah Johnson',
-					email: 'sarah.j@example.com',
-					isActive: true,
-					createdAt: new Date().toISOString(),
-					updatedAt: new Date().toISOString()
-				}
-			];
-			error = null;
 		} finally {
 			loading = false;
 		}
 	}
 
-	function openCreateModal() {
-		formData = { name: '', email: '', phone: '', notes: '' };
-		editingClient = null;
-		showCreateModal = true;
+	function openDeleteModal(client: Client) {
+		clientToDelete = client;
+		showDeleteModal = true;
 	}
 
-	function openEditModal(client: Client) {
-		formData = {
-			name: client.name,
-			email: client.email,
-			phone: client.phone || '',
-			notes: client.notes || ''
-		};
-		editingClient = client;
-		showCreateModal = true;
-	}
-
-	async function saveClient() {
-		try {
-			if (editingClient) {
-				const updated = await clientsApi.update(companyId, editingClient.id, formData);
-				clients = clients.map((c) => (c.id === updated.id ? updated : c));
-			} else {
-				const newClient = await clientsApi.create(companyId, formData);
-				clients = [...clients, newClient];
-			}
-			showCreateModal = false;
-			formData = { name: '', email: '', phone: '', notes: '' };
-			editingClient = null;
-		} catch (e) {
-			error = e instanceof Error ? e.message : 'Failed to save client';
-		}
-	}
-
-	async function deleteClient(client: Client) {
-		if (!confirm(`Are you sure you want to delete ${client.name}?`)) return;
-		try {
-			await clientsApi.delete(companyId, client.id);
-			clients = clients.filter((c) => c.id !== client.id);
-		} catch (e) {
-			error = e instanceof Error ? e.message : 'Failed to delete client';
-		}
+	async function deleteClient() {
+		if (!companyId || !clientToDelete) return;
+		await clientsApi.delete(clientToDelete.id, companyId);
+		clients = clients.filter((c) => c.id !== clientToDelete!.id);
+		clientToDelete = null;
 	}
 
 	const filteredClients = $derived(
@@ -122,7 +64,7 @@
 			<h1 class="text-2xl font-semibold text-surface-900">Clients</h1>
 			<p class="text-surface-500 mt-1">Manage your client contacts</p>
 		</div>
-		<button class="btn btn-primary" onclick={openCreateModal}>
+		<button class="btn btn-primary" onclick={() => goto(`/companies/${companyId}/clients/new`)}>
 			<span class="material-icons text-sm">person_add</span>
 			Add Client
 		</button>
@@ -143,18 +85,17 @@
 		</div>
 	</div>
 
-	<!-- Error State -->
-	{#if error}
-		<div class="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
-			{error}
-		</div>
-	{/if}
-
 	<!-- Loading State -->
 	{#if loading}
 		<div class="flex items-center justify-center py-12">
 			<div class="text-surface-500">Loading clients...</div>
 		</div>
+	{:else if error}
+		<ErrorState
+			title="Unable to Load Clients"
+			message={error}
+			onRetry={loadClients}
+		/>
 	{:else if filteredClients.length === 0}
 		<!-- Empty State -->
 		<div class="card p-8 text-center">
@@ -168,7 +109,7 @@
 				{searchQuery ? 'Try a different search term' : 'Add your first client to get started'}
 			</p>
 			{#if !searchQuery}
-				<button class="btn btn-primary" onclick={openCreateModal}>
+				<button class="btn btn-primary" onclick={() => goto(`/companies/${companyId}/clients/new`)}>
 					<span class="material-icons text-sm">person_add</span>
 					Add Client
 				</button>
@@ -184,12 +125,15 @@
 						<th>Email</th>
 						<th>Phone</th>
 						<th>Status</th>
-						<th class="w-20">Actions</th>
+						<th class="w-24">Actions</th>
 					</tr>
 				</thead>
 				<tbody>
 					{#each filteredClients as client}
-						<tr>
+						<tr
+							class="cursor-pointer hover:bg-surface-50"
+							onclick={() => goto(`/companies/${companyId}/clients/${client.id}`)}
+						>
 							<td>
 								<div class="flex items-center gap-3">
 									<div
@@ -211,14 +155,14 @@
 								<div class="flex items-center gap-1">
 									<button
 										class="p-1 hover:bg-surface-100 rounded"
-										onclick={() => openEditModal(client)}
+										onclick={(e) => { e.stopPropagation(); goto(`/companies/${companyId}/clients/${client.id}`); }}
 										title="Edit"
 									>
 										<span class="material-icons text-lg text-surface-500">edit</span>
 									</button>
 									<button
 										class="p-1 hover:bg-surface-100 rounded"
-										onclick={() => deleteClient(client)}
+										onclick={(e) => { e.stopPropagation(); openDeleteModal(client); }}
 										title="Delete"
 									>
 										<span class="material-icons text-lg text-red-500">delete</span>
@@ -233,74 +177,10 @@
 	{/if}
 </div>
 
-<!-- Create/Edit Client Modal -->
-{#if showCreateModal}
-	<div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-		<div class="card w-full max-w-md mx-4">
-			<div class="p-4 border-b border-surface-200 flex justify-between items-center">
-				<h2 class="text-lg font-medium text-surface-900">
-					{editingClient ? 'Edit Client' : 'Add Client'}
-				</h2>
-				<button class="text-surface-400 hover:text-surface-600" onclick={() => (showCreateModal = false)}>
-					<span class="material-icons">close</span>
-				</button>
-			</div>
-			<form class="p-4 space-y-4" onsubmit={(e) => { e.preventDefault(); saveClient(); }}>
-				<div>
-					<label for="name" class="block text-sm font-medium text-surface-700 mb-1">
-						Name *
-					</label>
-					<input
-						id="name"
-						type="text"
-						class="input"
-						bind:value={formData.name}
-						required
-					/>
-				</div>
-				<div>
-					<label for="email" class="block text-sm font-medium text-surface-700 mb-1">
-						Email *
-					</label>
-					<input
-						id="email"
-						type="email"
-						class="input"
-						bind:value={formData.email}
-						required
-					/>
-				</div>
-				<div>
-					<label for="phone" class="block text-sm font-medium text-surface-700 mb-1">
-						Phone
-					</label>
-					<input
-						id="phone"
-						type="tel"
-						class="input"
-						bind:value={formData.phone}
-					/>
-				</div>
-				<div>
-					<label for="notes" class="block text-sm font-medium text-surface-700 mb-1">
-						Notes
-					</label>
-					<textarea
-						id="notes"
-						class="input"
-						rows="3"
-						bind:value={formData.notes}
-					></textarea>
-				</div>
-				<div class="flex justify-end gap-3 pt-4">
-					<button type="button" class="btn btn-secondary" onclick={() => (showCreateModal = false)}>
-						Cancel
-					</button>
-					<button type="submit" class="btn btn-primary">
-						{editingClient ? 'Save Changes' : 'Add Client'}
-					</button>
-				</div>
-			</form>
-		</div>
-	</div>
-{/if}
+<ConfirmDeleteModal
+	bind:open={showDeleteModal}
+	title="Delete Client"
+	message="Are you sure you want to delete"
+	itemName={clientToDelete?.name || ''}
+	onConfirm={deleteClient}
+/>

@@ -44,6 +44,9 @@ export class ProductEntity {
   @Index()
   sku?: string;
 
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
+  taxRate?: number; // Default tax rate percentage (e.g., 15 for 15%)
+
   @Column({ type: 'boolean', default: true })
   @Index()
   isActive!: boolean;

@@ -12,12 +12,12 @@
 			issueDate: '2025-01-01',
 			dueDate: '2025-01-31',
 			subtotal: 15000,
-			taxAmount: 2250,
+			taxTotal: 2250,
 			total: 17250,
-			currency: 'ZAR',
-			lineItems: [],
-			createdAt: new Date().toISOString(),
-			updatedAt: new Date().toISOString()
+			amountPaid: 0,
+			balance: 17250,
+			createdOn: new Date().toISOString(),
+			updatedOn: new Date().toISOString()
 		},
 		{
 			id: 'inv-2',
@@ -28,17 +28,17 @@
 			issueDate: '2024-12-01',
 			dueDate: '2024-12-31',
 			subtotal: 8500,
-			taxAmount: 1275,
+			taxTotal: 1275,
 			total: 9775,
-			currency: 'ZAR',
-			lineItems: [],
-			createdAt: new Date().toISOString(),
-			updatedAt: new Date().toISOString()
+			amountPaid: 9775,
+			balance: 0,
+			createdOn: new Date().toISOString(),
+			updatedOn: new Date().toISOString()
 		}
 	];
 
-	function formatCurrency(amount: number, currency: string) {
-		return new Intl.NumberFormat('en-ZA', { style: 'currency', currency }).format(amount);
+	function formatCurrency(amount: number) {
+		return new Intl.NumberFormat('en-ZA', { style: 'currency', currency: 'ZAR' }).format(amount);
 	}
 
 	function formatDate(date: string) {
@@ -72,7 +72,7 @@
 	<div class="card p-5 mb-6 flex items-center justify-between">
 		<div>
 			<p class="text-sm text-surface-500">Outstanding Balance</p>
-			<p class="text-3xl font-semibold text-surface-900">{formatCurrency(outstanding, 'ZAR')}</p>
+			<p class="text-3xl font-semibold text-surface-900">{formatCurrency(outstanding)}</p>
 		</div>
 		<button class="btn btn-primary">
 			<span class="material-icons text-sm">payment</span>
@@ -110,7 +110,7 @@
 							<td class="text-surface-600">{formatDate(invoice.issueDate)}</td>
 							<td class="text-surface-600">{formatDate(invoice.dueDate)}</td>
 							<td class="font-medium text-surface-900">
-								{formatCurrency(invoice.total, invoice.currency)}
+								{formatCurrency(invoice.total)}
 							</td>
 							<td>
 								<span class="badge {getStatusClass(invoice.status)} capitalize">

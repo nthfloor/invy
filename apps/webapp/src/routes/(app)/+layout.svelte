@@ -1,17 +1,22 @@
 <script lang="ts">
 	import { page } from '$app/stores';
-	import { auth, user, currentCompanyId } from '$lib/stores/auth';
+	import { user, currentCompanyId } from '$lib/stores/auth';
 
 	let { children } = $props();
 
 	const navItems = $derived([
-		{ href: '/dashboard', label: 'Dashboard', icon: 'dashboard' },
 		{ href: '/companies', label: 'Companies', icon: 'business' }
 	]);
 
 	const companyNavItems = $derived(
 		$currentCompanyId
 			? [
+					{
+						href: `/companies/${$currentCompanyId}`,
+						label: 'Dashboard',
+						icon: 'dashboard',
+						exact: true
+					},
 					{
 						href: `/companies/${$currentCompanyId}/clients`,
 						label: 'Clients',
@@ -28,9 +33,9 @@
 						icon: 'receipt'
 					},
 					{
-						href: `/companies/${$currentCompanyId}/payments`,
-						label: 'Payments',
-						icon: 'payments'
+						href: `/companies/${$currentCompanyId}/transactions`,
+						label: 'Transactions',
+						icon: 'account_balance'
 					},
 					{
 						href: `/companies/${$currentCompanyId}/settings`,
@@ -41,7 +46,10 @@
 			: []
 	);
 
-	function isActive(href: string): boolean {
+	function isActive(href: string, exact = false): boolean {
+		if (exact) {
+			return $page.url.pathname === href;
+		}
 		return $page.url.pathname.startsWith(href);
 	}
 </script>
@@ -51,7 +59,7 @@
 	<aside class="w-64 bg-surface-50 border-r border-surface-200 flex flex-col">
 		<!-- Logo -->
 		<div class="p-4 border-b border-surface-200">
-			<a href="/dashboard" class="flex items-center gap-2">
+			<a href="/companies" class="flex items-center gap-2">
 				<div
 					class="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center text-white font-bold"
 				>
@@ -82,7 +90,8 @@
 						<a
 							href={item.href}
 							class="flex items-center gap-3 px-3 py-2 rounded-md transition-colors {isActive(
-								item.href
+								item.href,
+								item.exact
 							)
 								? 'bg-primary-50 text-primary-700'
 								: 'text-surface-600 hover:bg-surface-100'}"

@@ -166,6 +166,9 @@ export interface Client {
 	phone?: string;
 	address?: Address;
 	externalId?: string;
+	vatNumber?: string;
+	taxNumber?: string;
+	registrationNumber?: string;
 	notes?: string;
 	isActive: boolean;
 	createdBy?: string;
@@ -180,8 +183,9 @@ export interface Product {
 	name: string;
 	description?: string;
 	unitPrice: number;
-	currency: string;
+	taxId?: string;
 	taxRate?: number;
+	sku?: string;
 	isActive: boolean;
 	createdOn: string;
 	updatedOn: string;

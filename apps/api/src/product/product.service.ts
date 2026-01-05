@@ -44,6 +44,7 @@ export class ProductService {
       description: dto.description,
       unitPrice: dto.unitPrice,
       taxId: dto.taxId,
+      taxRate: dto.taxRate,
       sku: dto.sku,
       isActive: true,
     });

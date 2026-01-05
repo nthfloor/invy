@@ -1,7 +1,9 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import { invoicesApi, type Invoice } from '$lib/api/client';
+	import ErrorState from '$lib/components/ErrorState.svelte';
 
 	let companyId = $derived($page.params.companyId);
 
@@ -9,13 +11,13 @@
 	let loading = $state(true);
 	let error = $state<string | null>(null);
 	let statusFilter = $state('');
-	let showCreateModal = $state(false);
 
 	onMount(async () => {
 		await loadInvoices();
 	});
 
 	async function loadInvoices() {
+		if (!companyId) return;
 		loading = true;
 		error = null;
 		try {
@@ -23,58 +25,6 @@
 			invoices = result.data;
 		} catch (e) {
 			error = e instanceof Error ? e.message : 'Failed to load invoices';
-			// Demo data
-			invoices = [
-				{
-					id: 'inv-1',
-					companyId,
-					clientId: 'client-1',
-					invoiceNumber: 'INV-2025-001',
-					status: 'sent',
-					issueDate: '2025-01-01',
-					dueDate: '2025-01-31',
-					subtotal: 15000,
-					taxAmount: 2250,
-					total: 17250,
-					currency: 'ZAR',
-					lineItems: [],
-					createdAt: new Date().toISOString(),
-					updatedAt: new Date().toISOString()
-				},
-				{
-					id: 'inv-2',
-					companyId,
-					clientId: 'client-2',
-					invoiceNumber: 'INV-2025-002',
-					status: 'paid',
-					issueDate: '2025-01-03',
-					dueDate: '2025-02-03',
-					subtotal: 24000,
-					taxAmount: 3600,
-					total: 27600,
-					currency: 'ZAR',
-					lineItems: [],
-					createdAt: new Date().toISOString(),
-					updatedAt: new Date().toISOString()
-				},
-				{
-					id: 'inv-3',
-					companyId,
-					clientId: 'client-1',
-					invoiceNumber: 'INV-2024-045',
-					status: 'overdue',
-					issueDate: '2024-12-01',
-					dueDate: '2024-12-31',
-					subtotal: 8500,
-					taxAmount: 1275,
-					total: 9775,
-					currency: 'ZAR',
-					lineItems: [],
-					createdAt: new Date().toISOString(),
-					updatedAt: new Date().toISOString()
-				}
-			];
-			error = null;
 		} finally {
 			loading = false;
 		}
@@ -82,16 +32,27 @@
 
 	async function sendInvoice(invoice: Invoice) {
 		if (!confirm(`Send invoice ${invoice.invoiceNumber} to client?`)) return;
+		if (!companyId) return;
 		try {
-			await invoicesApi.send(companyId, invoice.id);
+			await invoicesApi.markAsSent(invoice.id, companyId);
 			invoices = invoices.map((i) => (i.id === invoice.id ? { ...i, status: 'sent' } : i));
 		} catch (e) {
 			error = e instanceof Error ? e.message : 'Failed to send invoice';
 		}
 	}
 
-	function formatCurrency(amount: number, currency: string) {
-		return new Intl.NumberFormat('en-ZA', { style: 'currency', currency }).format(amount);
+	function viewInvoice(invoice: Invoice) {
+		goto(`/companies/${companyId}/invoices/${invoice.id}`);
+	}
+
+	function downloadInvoice(invoice: Invoice) {
+		if (!companyId) return;
+		const url = invoicesApi.getPdfUrl(invoice.id, companyId, true);
+		window.open(url, '_blank');
+	}
+
+	function formatCurrency(amount: number) {
+		return new Intl.NumberFormat('en-ZA', { style: 'currency', currency: 'ZAR' }).format(amount);
 	}
 
 	function formatDate(date: string) {
@@ -112,6 +73,8 @@
 				return 'badge-error';
 			case 'draft':
 				return 'bg-surface-200 text-surface-600';
+			case 'partial':
+				return 'bg-yellow-100 text-yellow-700';
 			case 'cancelled':
 				return 'bg-surface-200 text-surface-500';
 			default:
@@ -139,7 +102,7 @@
 			<h1 class="text-2xl font-semibold text-surface-900">Invoices</h1>
 			<p class="text-surface-500 mt-1">Create and manage invoices</p>
 		</div>
-		<button class="btn btn-primary" onclick={() => (showCreateModal = true)}>
+		<button class="btn btn-primary" onclick={() => goto(`/companies/${companyId}/invoices/new`)}>
 			<span class="material-icons text-sm">add</span>
 			New Invoice
 		</button>
@@ -149,19 +112,19 @@
 	<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
 		<div class="card p-4">
 			<p class="text-sm text-surface-500">Total</p>
-			<p class="text-xl font-semibold text-surface-900">{formatCurrency(stats.total, 'ZAR')}</p>
+			<p class="text-xl font-semibold text-surface-900">{formatCurrency(stats.total)}</p>
 		</div>
 		<div class="card p-4">
 			<p class="text-sm text-surface-500">Paid</p>
-			<p class="text-xl font-semibold text-green-600">{formatCurrency(stats.paid, 'ZAR')}</p>
+			<p class="text-xl font-semibold text-green-600">{formatCurrency(stats.paid)}</p>
 		</div>
 		<div class="card p-4">
 			<p class="text-sm text-surface-500">Pending</p>
-			<p class="text-xl font-semibold text-blue-600">{formatCurrency(stats.pending, 'ZAR')}</p>
+			<p class="text-xl font-semibold text-blue-600">{formatCurrency(stats.pending)}</p>
 		</div>
 		<div class="card p-4">
 			<p class="text-sm text-surface-500">Overdue</p>
-			<p class="text-xl font-semibold text-red-600">{formatCurrency(stats.overdue, 'ZAR')}</p>
+			<p class="text-xl font-semibold text-red-600">{formatCurrency(stats.overdue)}</p>
 		</div>
 	</div>
 
@@ -188,14 +151,16 @@
 		{/each}
 	</div>
 
-	{#if error}
-		<div class="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">{error}</div>
-	{/if}
-
 	{#if loading}
 		<div class="flex items-center justify-center py-12">
 			<div class="text-surface-500">Loading invoices...</div>
 		</div>
+	{:else if error && invoices.length === 0}
+		<ErrorState
+			title="Unable to Load Invoices"
+			message={error}
+			onRetry={loadInvoices}
+		/>
 	{:else if filteredInvoices.length === 0}
 		<div class="card p-8 text-center">
 			<div class="w-16 h-16 bg-surface-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -203,7 +168,7 @@
 			</div>
 			<h3 class="text-lg font-medium text-surface-900 mb-2">No invoices</h3>
 			<p class="text-surface-500 mb-4">Create your first invoice to get started</p>
-			<button class="btn btn-primary" onclick={() => (showCreateModal = true)}>
+			<button class="btn btn-primary" onclick={() => goto(`/companies/${companyId}/invoices/new`)}>
 				<span class="material-icons text-sm">add</span>
 				New Invoice
 			</button>
@@ -223,12 +188,12 @@
 				</thead>
 				<tbody>
 					{#each filteredInvoices as invoice}
-						<tr>
+						<tr class="cursor-pointer hover:bg-surface-50" onclick={() => viewInvoice(invoice)}>
 							<td class="font-medium text-surface-900">{invoice.invoiceNumber}</td>
 							<td class="text-surface-600">{formatDate(invoice.issueDate)}</td>
 							<td class="text-surface-600">{formatDate(invoice.dueDate)}</td>
 							<td class="font-medium text-surface-900">
-								{formatCurrency(invoice.total, invoice.currency)}
+								{formatCurrency(invoice.total)}
 							</td>
 							<td>
 								<span class="badge {getStatusClass(invoice.status)} capitalize">
@@ -240,16 +205,24 @@
 									{#if invoice.status === 'draft'}
 										<button
 											class="p-1 hover:bg-surface-100 rounded"
-											onclick={() => sendInvoice(invoice)}
+											onclick={(e) => { e.stopPropagation(); sendInvoice(invoice); }}
 											title="Send"
 										>
 											<span class="material-icons text-lg text-primary-600">send</span>
 										</button>
 									{/if}
-									<button class="p-1 hover:bg-surface-100 rounded" title="View">
+									<button
+										class="p-1 hover:bg-surface-100 rounded"
+										title="View"
+										onclick={(e) => { e.stopPropagation(); viewInvoice(invoice); }}
+									>
 										<span class="material-icons text-lg text-surface-500">visibility</span>
 									</button>
-									<button class="p-1 hover:bg-surface-100 rounded" title="Download">
+									<button
+										class="p-1 hover:bg-surface-100 rounded"
+										title="Download"
+										onclick={(e) => { e.stopPropagation(); downloadInvoice(invoice); }}
+									>
 										<span class="material-icons text-lg text-surface-500">download</span>
 									</button>
 								</div>
@@ -261,26 +234,3 @@
 		</div>
 	{/if}
 </div>
-
-{#if showCreateModal}
-	<div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-		<div class="card w-full max-w-2xl mx-4 max-h-[90vh] overflow-auto">
-			<div class="p-4 border-b border-surface-200 flex justify-between items-center">
-				<h2 class="text-lg font-medium text-surface-900">New Invoice</h2>
-				<button class="text-surface-400 hover:text-surface-600" onclick={() => (showCreateModal = false)}>
-					<span class="material-icons">close</span>
-				</button>
-			</div>
-			<div class="p-4">
-				<p class="text-surface-500">Invoice creation form would go here.</p>
-				<p class="text-surface-400 text-sm mt-2">
-					This would include client selection, line items, dates, and notes.
-				</p>
-				<div class="flex justify-end gap-3 pt-6">
-					<button class="btn btn-secondary" onclick={() => (showCreateModal = false)}>Cancel</button>
-					<button class="btn btn-primary">Create Invoice</button>
-				</div>
-			</div>
-		</div>
-	</div>
-{/if}

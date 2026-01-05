@@ -43,6 +43,27 @@ export class CreateClientDto {
   @MaxLength(255)
   externalId?: string;
 
+  @ApiPropertyOptional({ description: 'VAT number', example: 'VAT123456789' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  vatNumber?: string;
+
+  @ApiPropertyOptional({ description: 'Tax number', example: '9876543210' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  taxNumber?: string;
+
+  @ApiPropertyOptional({
+    description: 'Registration number',
+    example: '2024/123456/07',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  registrationNumber?: string;
+
   @ApiPropertyOptional({ description: 'Notes about the client' })
   @IsOptional()
   @IsString()

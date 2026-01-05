@@ -2,6 +2,7 @@
 	import { page } from '$app/stores';
 	import { companiesApi, type Company } from '$lib/api/client';
 	import { onMount } from 'svelte';
+	import ErrorState from '$lib/components/ErrorState.svelte';
 
 	let companyId = $derived($page.params.companyId);
 
@@ -15,6 +16,10 @@
 		name: '',
 		email: '',
 		phone: '',
+		taxId: '',
+		taxNumber: '',
+		registrationNumber: '',
+		currency: 'ZAR',
 		address: {
 			line1: '',
 			line2: '',
@@ -30,54 +35,39 @@
 	});
 
 	async function loadCompany() {
+		if (!companyId) return;
 		loading = true;
 		error = null;
 		try {
 			company = await companiesApi.get(companyId);
-			formData = {
-				name: company.name,
-				email: company.email,
-				phone: company.phone || '',
-				address: {
-					line1: company.address?.line1 || '',
-					line2: company.address?.line2 || '',
-					city: company.address?.city || '',
-					state: company.address?.state || '',
-					postalCode: company.address?.postalCode || '',
-					country: company.address?.country || 'South Africa'
-				}
-			};
+			if (company) {
+				formData = {
+					name: company.name,
+					email: company.email,
+					phone: company.phone || '',
+					taxId: company.taxId || '',
+					taxNumber: company.taxNumber || '',
+					registrationNumber: company.registrationNumber || '',
+					currency: company.currency || 'ZAR',
+					address: {
+						line1: company.address?.line1 || '',
+						line2: company.address?.line2 || '',
+						city: company.address?.city || '',
+						state: company.address?.state || '',
+						postalCode: company.address?.postalCode || '',
+						country: company.address?.country || 'South Africa'
+					}
+				};
+			}
 		} catch (e) {
 			error = e instanceof Error ? e.message : 'Failed to load company';
-			// Demo data
-			company = {
-				id: companyId,
-				name: 'Demo Company',
-				email: 'demo@company.com',
-				isActive: true,
-				createdAt: new Date().toISOString(),
-				updatedAt: new Date().toISOString()
-			};
-			formData = {
-				name: company.name,
-				email: company.email,
-				phone: '',
-				address: {
-					line1: '',
-					line2: '',
-					city: '',
-					state: '',
-					postalCode: '',
-					country: 'South Africa'
-				}
-			};
-			error = null;
 		} finally {
 			loading = false;
 		}
 	}
 
 	async function saveSettings() {
+		if (!companyId) return;
 		saving = true;
 		error = null;
 		success = null;
@@ -99,10 +89,6 @@
 		<p class="text-surface-500 mt-1">Manage your company information</p>
 	</div>
 
-	{#if error}
-		<div class="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">{error}</div>
-	{/if}
-
 	{#if success}
 		<div class="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg text-green-700">{success}</div>
 	{/if}
@@ -111,7 +97,13 @@
 		<div class="flex items-center justify-center py-12">
 			<div class="text-surface-500">Loading settings...</div>
 		</div>
-	{:else}
+	{:else if error && !company}
+		<ErrorState
+			title="Unable to Load Settings"
+			message={error}
+			onRetry={loadCompany}
+		/>
+	{:else if company}
 		<form class="space-y-6" onsubmit={(e) => { e.preventDefault(); saveSettings(); }}>
 			<!-- Basic Info -->
 			<div class="card p-5">
@@ -153,6 +145,62 @@
 								bind:value={formData.phone}
 							/>
 						</div>
+					</div>
+					<div>
+						<label for="currency" class="block text-sm font-medium text-surface-700 mb-1">
+							Currency *
+						</label>
+						<select id="currency" class="input" bind:value={formData.currency} required>
+							<option value="ZAR">ZAR - South African Rand</option>
+							<option value="USD">USD - US Dollar</option>
+							<option value="EUR">EUR - Euro</option>
+							<option value="GBP">GBP - British Pound</option>
+						</select>
+					</div>
+				</div>
+			</div>
+
+			<!-- Registration Details -->
+			<div class="card p-5">
+				<h2 class="text-lg font-medium text-surface-900 mb-4">Registration Details</h2>
+				<div class="space-y-4">
+					<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+						<div>
+							<label for="taxId" class="block text-sm font-medium text-surface-700 mb-1">
+								VAT Number
+							</label>
+							<input
+								id="taxId"
+								type="text"
+								class="input"
+								bind:value={formData.taxId}
+								placeholder="e.g. VAT123456789"
+							/>
+						</div>
+						<div>
+							<label for="taxNumber" class="block text-sm font-medium text-surface-700 mb-1">
+								Tax Number
+							</label>
+							<input
+								id="taxNumber"
+								type="text"
+								class="input"
+								bind:value={formData.taxNumber}
+								placeholder="e.g. 9876543210"
+							/>
+						</div>
+					</div>
+					<div>
+						<label for="registrationNumber" class="block text-sm font-medium text-surface-700 mb-1">
+							Registration Number
+						</label>
+						<input
+							id="registrationNumber"
+							type="text"
+							class="input"
+							bind:value={formData.registrationNumber}
+							placeholder="e.g. 2024/123456/07"
+						/>
 					</div>
 				</div>
 			</div>

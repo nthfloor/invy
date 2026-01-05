@@ -38,4 +38,13 @@ export class CreateProductDto {
   @IsString()
   @MaxLength(100)
   sku?: string;
+
+  @ApiPropertyOptional({
+    description: 'Default tax rate percentage',
+    example: 15,
+  })
+  @IsOptional()
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @Min(0)
+  taxRate?: number;
 }

@@ -50,6 +50,15 @@ export class ClientEntity {
   @Index()
   externalId?: string; // For sync from external client registry
 
+  @Column({ type: 'varchar', length: 100, nullable: true })
+  vatNumber?: string;
+
+  @Column({ type: 'varchar', length: 100, nullable: true })
+  taxNumber?: string;
+
+  @Column({ type: 'varchar', length: 100, nullable: true })
+  registrationNumber?: string;
+
   @Column({ type: 'text', nullable: true })
   notes?: string;
 
