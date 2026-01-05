@@ -102,7 +102,7 @@ export class WorkflowPersistenceService {
   ): Promise<WorkflowStateEntity | null> {
     return this.workflowStateRepository.findOne({
       where: { entityType, entityId },
-      order: { createdAt: 'DESC' },
+      order: { createdOn: 'DESC' },
     });
   }
 
@@ -143,7 +143,7 @@ export class WorkflowPersistenceService {
   async getRecoverable(): Promise<WorkflowStateEntity[]> {
     return this.workflowStateRepository.find({
       where: { status: 'running' },
-      order: { createdAt: 'ASC' },
+      order: { createdOn: 'ASC' },
     });
   }
 

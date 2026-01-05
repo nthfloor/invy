@@ -26,8 +26,8 @@ describe('ClientService', () => {
     externalId: 'ext-123',
     notes: 'Test notes',
     isActive: true,
-    createdAt: new Date(),
-    updatedAt: new Date(),
+    createdOn: new Date(),
+    updatedOn: new Date(),
   };
 
   const createMockQueryBuilder = () => {
@@ -79,13 +79,15 @@ describe('ClientService', () => {
       clientRepository.save.mockResolvedValue(mockClient);
 
       const result = await service.create({
-        companyId: 'company-uuid',
-        name: 'Test Client',
-        email: 'test@example.com',
+        dto: {
+          companyId: 'company-uuid',
+          name: 'Test Client',
+          email: 'test@example.com',
+        },
       });
 
       expect(result).toEqual(mockClient);
-      expect(companyService.exists).toHaveBeenCalledWith('company-uuid');
+      expect(companyService.exists).toHaveBeenCalledWith({ id: 'company-uuid' });
     });
 
     it('should throw BadRequestException if company does not exist', async () => {
@@ -93,9 +95,11 @@ describe('ClientService', () => {
 
       await expect(
         service.create({
-          companyId: 'invalid-uuid',
-          name: 'Test Client',
-          email: 'test@example.com',
+          dto: {
+            companyId: 'invalid-uuid',
+            name: 'Test Client',
+            email: 'test@example.com',
+          },
         }),
       ).rejects.toThrow(BadRequestException);
     });
@@ -106,9 +110,11 @@ describe('ClientService', () => {
 
       await expect(
         service.create({
-          companyId: 'company-uuid',
-          name: 'New Client',
-          email: 'test@example.com',
+          dto: {
+            companyId: 'company-uuid',
+            name: 'New Client',
+            email: 'test@example.com',
+          },
         }),
       ).rejects.toThrow(ConflictException);
     });

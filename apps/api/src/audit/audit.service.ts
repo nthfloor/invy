@@ -99,7 +99,7 @@ export class AuditService {
         entityId: params.entityId,
       },
       order: {
-        createdAt: 'DESC',
+        createdOn: 'DESC',
       },
     });
   }
@@ -123,16 +123,16 @@ export class AuditService {
 
     // Filter by date range
     if (params.startDate && params.endDate) {
-      queryBuilder.andWhere('audit.createdAt BETWEEN :startDate AND :endDate', {
+      queryBuilder.andWhere('audit.createdOn BETWEEN :startDate AND :endDate', {
         startDate: params.startDate,
         endDate: params.endDate,
       });
     } else if (params.startDate) {
-      queryBuilder.andWhere('audit.createdAt >= :startDate', {
+      queryBuilder.andWhere('audit.createdOn >= :startDate', {
         startDate: params.startDate,
       });
     } else if (params.endDate) {
-      queryBuilder.andWhere('audit.createdAt <= :endDate', {
+      queryBuilder.andWhere('audit.createdOn <= :endDate', {
         endDate: params.endDate,
       });
     }
@@ -147,7 +147,7 @@ export class AuditService {
     const [data, total] = await queryBuilder
       .skip(skip)
       .take(take)
-      .orderBy('audit.createdAt', 'DESC')
+      .orderBy('audit.createdOn', 'DESC')
       .getManyAndCount();
 
     return createPaginatedResult(data, total, currentPage, itemsPerPage);

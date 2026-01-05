@@ -575,7 +575,7 @@ export class QuoteService {
     const [data, total] = await queryBuilder
       .skip(skip)
       .take(take)
-      .orderBy('quote.createdAt', 'DESC')
+      .orderBy('quote.createdOn', 'DESC')
       .getManyAndCount();
 
     return createPaginatedResult(data, total, currentPage, itemsPerPage);

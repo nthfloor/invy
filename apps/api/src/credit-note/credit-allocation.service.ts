@@ -384,7 +384,7 @@ export class CreditAllocationService {
     return this.allocationRepository.find({
       where,
       relations: ['creditNote'],
-      order: { createdAt: 'ASC' },
+      order: { createdOn: 'ASC' },
     });
   }
 
@@ -435,7 +435,7 @@ export class CreditAllocationService {
 
     return this.allocationRepository.find({
       where,
-      order: { createdAt: 'ASC' },
+      order: { createdOn: 'ASC' },
     });
   }
 }

@@ -202,7 +202,7 @@ export class PaymentService {
       .skip(skip)
       .take(take)
       .orderBy('payment.paymentDate', 'DESC')
-      .addOrderBy('payment.createdAt', 'DESC')
+      .addOrderBy('payment.createdOn', 'DESC')
       .getManyAndCount();
 
     return createPaginatedResult(data, total, currentPage, itemsPerPage);
@@ -218,7 +218,7 @@ export class PaymentService {
     return this.paymentRepository.find({
       where: { invoiceId, companyId },
       relations: ['allocations'],
-      order: { paymentDate: 'DESC', createdAt: 'DESC' },
+      order: { paymentDate: 'DESC', createdOn: 'DESC' },
     });
   }
 

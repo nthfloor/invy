@@ -99,10 +99,10 @@ export class InvoiceEntity {
   items?: InvoiceItemEntity[];
 
   @CreateDateColumn()
-  createdAt!: Date;
+  createdOn!: Date;
 
   @UpdateDateColumn()
-  updatedAt!: Date;
+  updatedOn!: Date;
 }
 
 @Entity('invoice_items')
@@ -145,5 +145,5 @@ export class InvoiceItemEntity {
   sortOrder!: number;
 
   @CreateDateColumn()
-  createdAt!: Date;
+  createdOn!: Date;
 }

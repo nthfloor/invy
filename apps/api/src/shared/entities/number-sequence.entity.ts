@@ -30,5 +30,5 @@ export class NumberSequenceEntity {
   lastNumber!: number;
 
   @UpdateDateColumn()
-  updatedAt!: Date;
+  updatedOn!: Date;
 }

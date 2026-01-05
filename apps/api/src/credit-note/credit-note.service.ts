@@ -405,7 +405,7 @@ export class CreditNoteService {
     const [data, total] = await queryBuilder
       .skip(skip)
       .take(take)
-      .orderBy('creditNote.createdAt', 'DESC')
+      .orderBy('creditNote.createdOn', 'DESC')
       .getManyAndCount();
 
     return createPaginatedResult(data, total, currentPage, itemsPerPage);

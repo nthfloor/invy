@@ -187,9 +187,9 @@ export class InvoiceService {
       );
     }
 
-    if (dto.dueDate !== undefined) invoice.dueDate = new Date(dto.dueDate);
-    if (dto.notes !== undefined) invoice.notes = dto.notes;
-    if (dto.terms !== undefined) invoice.terms = dto.terms;
+    const { dueDate, ...rest } = dto;
+    if (dueDate) invoice.dueDate = new Date(dueDate);
+    Object.assign(invoice, rest);
 
     const saved = await this.invoiceRepository.save(invoice);
     this.logger.log(`Updated invoice: ${saved.id}`);
@@ -374,7 +374,7 @@ export class InvoiceService {
     const [data, total] = await queryBuilder
       .skip(skip)
       .take(take)
-      .orderBy('invoice.createdAt', 'DESC')
+      .orderBy('invoice.createdOn', 'DESC')
       .getManyAndCount();
 
     return createPaginatedResult(data, total, currentPage, itemsPerPage);
@@ -435,11 +435,7 @@ export class InvoiceService {
       throw new NotFoundException(`Item with ID ${itemId} not found`);
     }
 
-    if (dto.description !== undefined) item.description = dto.description;
-    if (dto.quantity !== undefined) item.quantity = dto.quantity;
-    if (dto.unitPrice !== undefined) item.unitPrice = dto.unitPrice;
-    if (dto.taxRate !== undefined) item.taxRate = dto.taxRate;
-    if (dto.productId !== undefined) item.productId = dto.productId;
+    Object.assign(item, dto);
 
     // Recalculate line totals
     item.lineTotal = Number(item.quantity) * Number(item.unitPrice);

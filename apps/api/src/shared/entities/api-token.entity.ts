@@ -33,8 +33,8 @@ export class ApiTokenEntity {
   revokedAt?: Date;
 
   @CreateDateColumn()
-  createdAt!: Date;
+  createdOn!: Date;
 
   @UpdateDateColumn()
-  updatedAt!: Date;
+  updatedOn!: Date;
 }

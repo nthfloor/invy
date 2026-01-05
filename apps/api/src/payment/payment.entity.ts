@@ -86,10 +86,10 @@ export class PaymentEntity {
   allocations?: PaymentAllocationEntity[];
 
   @CreateDateColumn()
-  createdAt!: Date;
+  createdOn!: Date;
 
   @UpdateDateColumn()
-  updatedAt!: Date;
+  updatedOn!: Date;
 }
 
 // Optional: Track which line items a payment applies to
@@ -116,5 +116,5 @@ export class PaymentAllocationEntity {
   amount!: number; // Amount allocated to this line item
 
   @CreateDateColumn()
-  createdAt!: Date;
+  createdOn!: Date;
 }

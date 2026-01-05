@@ -65,12 +65,7 @@ export class ProductService {
   }): Promise<ProductEntity> {
     const product = await this.findById({ id, companyId });
 
-    if (dto.name !== undefined) product.name = dto.name;
-    if (dto.description !== undefined) product.description = dto.description;
-    if (dto.unitPrice !== undefined) product.unitPrice = dto.unitPrice;
-    if (dto.taxId !== undefined) product.taxId = dto.taxId;
-    if (dto.sku !== undefined) product.sku = dto.sku;
-    if (dto.isActive !== undefined) product.isActive = dto.isActive;
+    Object.assign(product, dto);
 
     const saved = await this.productRepository.save(product);
     this.logger.log(`Updated product: ${saved.id}`);

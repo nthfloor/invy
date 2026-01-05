@@ -21,8 +21,8 @@ describe('ProductService', () => {
     taxId: 'tax-uuid',
     sku: 'SKU-001',
     isActive: true,
-    createdAt: new Date(),
-    updatedAt: new Date(),
+    createdOn: new Date(),
+    updatedOn: new Date(),
   };
 
   const createMockQueryBuilder = () => {
@@ -73,13 +73,15 @@ describe('ProductService', () => {
       productRepository.save.mockResolvedValue(mockProduct);
 
       const result = await service.create({
-        companyId: 'company-uuid',
-        name: 'Test Product',
-        unitPrice: 100,
+        dto: {
+          companyId: 'company-uuid',
+          name: 'Test Product',
+          unitPrice: 100,
+        },
       });
 
       expect(result).toEqual(mockProduct);
-      expect(companyService.exists).toHaveBeenCalledWith('company-uuid');
+      expect(companyService.exists).toHaveBeenCalledWith({ id: 'company-uuid' });
       expect(productRepository.create).toHaveBeenCalled();
       expect(productRepository.save).toHaveBeenCalled();
     });
@@ -89,9 +91,11 @@ describe('ProductService', () => {
 
       await expect(
         service.create({
-          companyId: 'invalid-uuid',
-          name: 'Test Product',
-          unitPrice: 100,
+          dto: {
+            companyId: 'invalid-uuid',
+            name: 'Test Product',
+            unitPrice: 100,
+          },
         }),
       ).rejects.toThrow(BadRequestException);
     });

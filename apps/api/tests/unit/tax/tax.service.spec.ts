@@ -19,8 +19,8 @@ describe('TaxService', () => {
     rate: 15,
     isDefault: false,
     isActive: true,
-    createdAt: new Date(),
-    updatedAt: new Date(),
+    createdOn: new Date(),
+    updatedOn: new Date(),
   };
 
   beforeEach(async () => {
@@ -56,13 +56,15 @@ describe('TaxService', () => {
       taxRepository.save.mockResolvedValue(mockTax);
 
       const result = await service.create({
-        companyId: 'company-uuid',
-        name: 'VAT 15%',
-        rate: 15,
+        dto: {
+          companyId: 'company-uuid',
+          name: 'VAT 15%',
+          rate: 15,
+        },
       });
 
       expect(result).toEqual(mockTax);
-      expect(companyService.exists).toHaveBeenCalledWith('company-uuid');
+      expect(companyService.exists).toHaveBeenCalledWith({ id: 'company-uuid' });
       expect(taxRepository.create).toHaveBeenCalled();
       expect(taxRepository.save).toHaveBeenCalled();
     });
@@ -72,9 +74,11 @@ describe('TaxService', () => {
 
       await expect(
         service.create({
-          companyId: 'invalid-uuid',
-          name: 'VAT 15%',
-          rate: 15,
+          dto: {
+            companyId: 'invalid-uuid',
+            name: 'VAT 15%',
+            rate: 15,
+          },
         }),
       ).rejects.toThrow(BadRequestException);
     });
@@ -87,10 +91,12 @@ describe('TaxService', () => {
       taxRepository.update.mockResolvedValue({ affected: 1 } as UpdateResult);
 
       await service.create({
-        companyId: 'company-uuid',
-        name: 'VAT 15%',
-        rate: 15,
-        isDefault: true,
+        dto: {
+          companyId: 'company-uuid',
+          name: 'VAT 15%',
+          rate: 15,
+          isDefault: true,
+        },
       });
 
       expect(taxRepository.update).toHaveBeenCalledWith(

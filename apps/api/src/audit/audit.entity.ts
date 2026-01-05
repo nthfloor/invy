@@ -90,5 +90,5 @@ export class AuditEventEntity {
 
   @CreateDateColumn()
   @Index()
-  createdAt!: Date;
+  createdOn!: Date;
 }

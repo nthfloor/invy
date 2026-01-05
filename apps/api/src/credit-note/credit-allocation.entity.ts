@@ -67,8 +67,8 @@ export class CreditAllocationEntity {
   releaseReason?: string; // Reason for release (e.g., "Quote rejected", "Invoice cancelled")
 
   @CreateDateColumn()
-  createdAt!: Date;
+  createdOn!: Date;
 
   @UpdateDateColumn()
-  updatedAt!: Date;
+  updatedOn!: Date;
 }

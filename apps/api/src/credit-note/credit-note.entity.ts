@@ -103,10 +103,10 @@ export class CreditNoteEntity {
   allocations?: CreditAllocationEntity[];
 
   @CreateDateColumn()
-  createdAt!: Date;
+  createdOn!: Date;
 
   @UpdateDateColumn()
-  updatedAt!: Date;
+  updatedOn!: Date;
 }
 
 @Entity('credit_note_items')
@@ -152,5 +152,5 @@ export class CreditNoteItemEntity {
   sortOrder!: number;
 
   @CreateDateColumn()
-  createdAt!: Date;
+  createdOn!: Date;
 }

@@ -42,7 +42,7 @@ export class IdempotencyRecordEntity {
    * Timestamp when the record was created.
    */
   @CreateDateColumn()
-  createdAt: Date;
+  createdOn: Date;
 
   /**
    * Timestamp when the record expires and can be cleaned up.

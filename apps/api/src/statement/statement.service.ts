@@ -163,7 +163,7 @@ export class StatementService {
         companyId,
         issueDate: Between(startDate, endDate),
       },
-      order: { issueDate: 'ASC', createdAt: 'ASC' },
+      order: { issueDate: 'ASC', createdOn: 'ASC' },
     });
 
     for (const invoice of invoices) {
@@ -187,7 +187,7 @@ export class StatementService {
         paymentDate: Between(startDate, endDate),
         status: 'completed',
       },
-      order: { paymentDate: 'ASC', createdAt: 'ASC' },
+      order: { paymentDate: 'ASC', createdOn: 'ASC' },
     });
 
     for (const payment of payments) {
@@ -208,7 +208,7 @@ export class StatementService {
         companyId,
         issueDate: Between(startDate, endDate),
       },
-      order: { issueDate: 'ASC', createdAt: 'ASC' },
+      order: { issueDate: 'ASC', createdOn: 'ASC' },
     });
 
     for (const cn of creditNotes) {

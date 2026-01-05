@@ -101,10 +101,10 @@ export class QuoteEntity {
   items?: QuoteItemEntity[];
 
   @CreateDateColumn()
-  createdAt!: Date;
+  createdOn!: Date;
 
   @UpdateDateColumn()
-  updatedAt!: Date;
+  updatedOn!: Date;
 }
 
 @Entity('quote_items')
@@ -147,5 +147,5 @@ export class QuoteItemEntity {
   sortOrder!: number;
 
   @CreateDateColumn()
-  createdAt!: Date;
+  createdOn!: Date;
 }

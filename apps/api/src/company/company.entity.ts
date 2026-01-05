@@ -38,9 +38,21 @@ export class CompanyEntity {
   @Column({ type: 'varchar', length: 255 })
   name!: string;
 
+  @Column({ type: 'varchar', length: 255 })
+  email!: string;
+
+  @Column({ type: 'varchar', length: 50, nullable: true })
+  phone?: string;
+
   @Column({ type: 'varchar', length: 100, nullable: true })
   @Index({ unique: true })
   taxId?: string; // VAT/GST number
+
+  @Column({ type: 'varchar', length: 100, nullable: true })
+  taxNumber?: string; // Tax registration number
+
+  @Column({ type: 'varchar', length: 100, nullable: true })
+  registrationNumber?: string; // Company registration number
 
   @Column({ type: 'varchar', length: 3, default: 'ZAR' })
   currency!: string;
@@ -59,8 +71,8 @@ export class CompanyEntity {
   isActive!: boolean;
 
   @CreateDateColumn()
-  createdAt!: Date;
+  createdOn!: Date;
 
   @UpdateDateColumn()
-  updatedAt!: Date;
+  updatedOn!: Date;
 }

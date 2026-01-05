@@ -99,13 +99,7 @@ export class ClientService {
       }
     }
 
-    if (dto.name !== undefined) client.name = dto.name;
-    if (dto.email !== undefined) client.email = dto.email;
-    if (dto.phone !== undefined) client.phone = dto.phone;
-    if (dto.address !== undefined) client.address = dto.address;
-    if (dto.externalId !== undefined) client.externalId = dto.externalId;
-    if (dto.notes !== undefined) client.notes = dto.notes;
-    if (dto.isActive !== undefined) client.isActive = dto.isActive;
+    Object.assign(client, dto);
     if (userId) client.updatedBy = userId;
 
     const saved = await this.clientRepository.save(client);
@@ -177,7 +171,7 @@ export class ClientService {
     const [data, total] = await queryBuilder
       .skip(skip)
       .take(take)
-      .orderBy('client.createdAt', 'DESC')
+      .orderBy('client.createdOn', 'DESC')
       .getManyAndCount();
 
     return createPaginatedResult(data, total, currentPage, itemsPerPage);

@@ -114,21 +114,48 @@ export interface Address {
 	country?: string;
 }
 
+export interface CompanySettings {
+	invoicePrefix?: string;
+	quotePrefix?: string;
+	estimatePrefix?: string;
+	paymentTermsDays?: number;
+	quoteValidityDays?: number;
+}
+
+export interface CompanyBranding {
+	logoUrl?: string;
+	primaryColor?: string;
+	secondaryColor?: string;
+}
+
 export interface Company {
 	id: string;
 	name: string;
 	email: string;
 	phone?: string;
 	taxId?: string;
+	taxNumber?: string;
+	registrationNumber?: string;
+	currency: string;
 	address?: Address;
-	settings?: {
-		invoicePrefix?: string;
-		paymentTermsDays?: number;
-		currency?: string;
-	};
+	settings?: CompanySettings;
+	branding?: CompanyBranding;
 	isActive: boolean;
-	createdAt: string;
-	updatedAt: string;
+	createdOn: string;
+	updatedOn: string;
+}
+
+export interface CreateCompanyRequest {
+	name: string;
+	email: string;
+	phone?: string;
+	taxId?: string;
+	taxNumber?: string;
+	registrationNumber?: string;
+	currency?: string;
+	address?: Address;
+	settings?: CompanySettings;
+	branding?: CompanyBranding;
 }
 
 export interface Client {
@@ -143,8 +170,8 @@ export interface Client {
 	isActive: boolean;
 	createdBy?: string;
 	updatedBy?: string;
-	createdAt: string;  // API returns createdAt
-	updatedAt: string;  // API returns updatedAt
+	createdOn: string;
+	updatedOn: string;
 }
 
 export interface Product {
@@ -156,8 +183,8 @@ export interface Product {
 	currency: string;
 	taxRate?: number;
 	isActive: boolean;
-	createdAt: string;
-	updatedAt: string;
+	createdOn: string;
+	updatedOn: string;
 }
 
 export interface InvoiceItem {
@@ -191,8 +218,8 @@ export interface Invoice {
 	cancelReason?: string;
 	items?: InvoiceItem[];
 	client?: Client;
-	createdAt: string;
-	updatedAt: string;
+	createdOn: string;
+	updatedOn: string;
 }
 
 export interface Payment {
@@ -207,8 +234,8 @@ export interface Payment {
 	reference?: string;
 	notes?: string;
 	status: 'pending' | 'completed' | 'failed' | 'refunded';
-	createdAt: string;
-	updatedAt: string;
+	createdOn: string;
+	updatedOn: string;
 }
 
 export interface CreditNote {
@@ -228,8 +255,8 @@ export interface CreditNote {
 	amountApplied: number;
 	balance: number;
 	voidReason?: string;
-	createdAt: string;
-	updatedAt: string;
+	createdOn: string;
+	updatedOn: string;
 }
 
 // Resource-specific API methods
@@ -241,9 +268,9 @@ export const companiesApi = {
 
 	get: (id: string) => api.get<Company>(`/companies/${id}`),
 
-	create: (data: Partial<Company>) => api.post<Company>('/companies', data),
+	create: (data: CreateCompanyRequest) => api.post<Company>('/companies', data),
 
-	update: (id: string, data: Partial<Company>) => api.put<Company>(`/companies/${id}`, data),
+	update: (id: string, data: Partial<CreateCompanyRequest>) => api.put<Company>(`/companies/${id}`, data),
 
 	delete: (id: string) => api.delete<void>(`/companies/${id}`)
 };

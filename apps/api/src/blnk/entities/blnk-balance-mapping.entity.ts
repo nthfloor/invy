@@ -40,8 +40,8 @@ export class BlnkBalanceMappingEntity {
   currency!: string;
 
   @CreateDateColumn({ type: 'timestamp with time zone' })
-  createdAt!: Date;
+  createdOn!: Date;
 
   @UpdateDateColumn({ type: 'timestamp with time zone' })
-  updatedAt!: Date;
+  updatedOn!: Date;
 }

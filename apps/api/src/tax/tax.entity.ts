@@ -37,8 +37,8 @@ export class TaxEntity {
   isActive!: boolean;
 
   @CreateDateColumn()
-  createdAt!: Date;
+  createdOn!: Date;
 
   @UpdateDateColumn()
-  updatedAt!: Date;
+  updatedOn!: Date;
 }
