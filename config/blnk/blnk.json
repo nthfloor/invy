@@ -1,0 +1,33 @@
+{
+  "project_name": "Invy",
+  "data_source": {
+    "dns": "postgres://invy_admin:invy_secret@postgres:5432/blnk?sslmode=disable"
+  },
+  "redis": {
+    "dns": "redis:6379"
+  },
+  "typesense": {
+    "dns": "http://typesense:8108"
+  },
+  "type_sense_key": "typesense_api_key",
+  "server": {
+    "port": "5001",
+    "ssl": false
+  },
+  "tokenization_secret": "invy-blnk-secret-32-bytes-ok!!",
+  "rate_limit": {
+    "cleanup_interval": 3600
+  },
+  "otel": {
+    "endpoint": "http://jaeger:4318"
+  },
+  "notification": {
+    "slack": {
+      "webhook_url": ""
+    },
+    "webhook": {
+      "url": "",
+      "headers": {}
+    }
+  }
+}

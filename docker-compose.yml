@@ -1,0 +1,146 @@
+name: invy
+
+services:
+  # ===========================================
+  # Infrastructure Services
+  # ===========================================
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: invy-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-invy_admin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-invy_secret}
+      POSTGRES_DB: ${POSTGRES_DB:-invy}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./config/postgres:/docker-entrypoint-initdb.d:ro
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-invy_admin}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - invy-network
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: invy-redis
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - invy-network
+    restart: unless-stopped
+
+  typesense:
+    image: typesense/typesense:29.0
+    container_name: invy-typesense
+    environment:
+      TYPESENSE_API_KEY: ${TYPESENSE_API_KEY:-typesense_api_key}
+      TYPESENSE_DATA_DIR: /data
+    volumes:
+      - typesense_data:/data
+    ports:
+      - "${TYPESENSE_PORT:-8108}:8108"
+    networks:
+      - invy-network
+    restart: unless-stopped
+
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    container_name: invy-jaeger
+    ports:
+      - "16686:16686"  # Jaeger UI
+      - "4317:4317"    # OTLP gRPC
+      - "4318:4318"    # OTLP HTTP
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+    networks:
+      - invy-network
+    restart: unless-stopped
+
+  # ===========================================
+  # Financial Services (Headless)
+  # ===========================================
+
+  blnk:
+    image: jerryenebeli/blnk:0.12.0
+    container_name: invy-blnk
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      typesense:
+        condition: service_started
+      jaeger:
+        condition: service_started
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - "blnk migrate up && blnk start"
+    environment:
+      BLNK_CONFIG_FILE: /blnk.json
+      BLNK_TYPESENSE_KEY: ${BLNK_TYPESENSE_KEY:-typesense_api_key}
+      BLNK_TOKENIZATION_SECRET: ${BLNK_TOKENIZATION_SECRET}
+      BLNK_RATE_LIMIT_CLEANUP_INTERVAL_SEC: ${BLNK_RATE_LIMIT_CLEANUP_INTERVAL_SEC:-3600}
+    volumes:
+      - ./config/blnk/blnk.json:/blnk.json:ro
+    ports:
+      - "${BLNK_PORT:-5001}:5001"
+    networks:
+      - invy-network
+    restart: unless-stopped
+
+  blnk-worker:
+    image: jerryenebeli/blnk:0.12.0
+    container_name: invy-blnk-worker
+    depends_on:
+      blnk:
+        condition: service_started
+      jaeger:
+        condition: service_started
+    entrypoint: ["blnk", "workers"]
+    environment:
+      BLNK_CONFIG_FILE: /blnk.json
+      BLNK_TYPESENSE_KEY: ${BLNK_TYPESENSE_KEY:-typesense_api_key}
+      BLNK_TOKENIZATION_SECRET: ${BLNK_TOKENIZATION_SECRET}
+      BLNK_RATE_LIMIT_CLEANUP_INTERVAL_SEC: ${BLNK_RATE_LIMIT_CLEANUP_INTERVAL_SEC:-3600}
+    volumes:
+      - ./config/blnk/blnk.json:/blnk.json:ro
+    ports:
+      - "${BLNK_WORKER_PORT:-5004}:5004"
+    networks:
+      - invy-network
+    restart: unless-stopped
+
+  # ===========================================
+  # Application Services (run locally for development)
+  # ===========================================
+  #
+  # Start infrastructure only:
+  #   docker compose up -d
+  #
+  # Then run services locally with hot reload:
+  #   pnpm --filter @invy/api start:dev
+  #   pnpm --filter @invy/webapp dev
+  #
+
+networks:
+  invy-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:
+  typesense_data:

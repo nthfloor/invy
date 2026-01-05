@@ -1,9 +1,11 @@
 import { DataSource } from 'typeorm';
 import * as dotenv from 'dotenv';
+import * as path from 'path';
 import { ApiTokenEntity } from '../shared/entities/api-token.entity';
 import { generateApiToken, generateTokenId } from '../shared/auth/token.utils';
 
-dotenv.config();
+// Load .env from monorepo root
+dotenv.config({ path: path.resolve(__dirname, '../../../../.env') });
 
 async function main() {
   const name = process.argv[2] || 'Default Token';

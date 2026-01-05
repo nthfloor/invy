@@ -3,6 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { TerminusModule } from '@nestjs/terminus';
 import { APP_INTERCEPTOR } from '@nestjs/core';
+import * as path from 'path';
 
 import configuration, { configValidationSchema } from './config/configuration';
 
@@ -35,6 +36,7 @@ import { AuditModule } from './audit/audit.module';
     // Configuration
     ConfigModule.forRoot({
       isGlobal: true,
+      envFilePath: path.resolve(__dirname, '../../../.env'),
       load: [configuration],
       validationSchema: configValidationSchema,
     }),
@@ -51,7 +53,7 @@ import { AuditModule } from './audit/audit.module';
         database: configService.get<string>('database.database'),
         autoLoadEntities: true,
         synchronize: configService.get<string>('nodeEnv') === 'development',
-        logging: configService.get<string>('nodeEnv') === 'development',
+        logging: false, // roconfigService.get<string>('nodeEnv') === 'development',
       }),
       inject: [ConfigService],
     }),
