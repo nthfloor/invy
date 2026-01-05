@@ -17,7 +17,13 @@
     "build:webapp": "pnpm --filter @invy/webapp build",
     "test": "pnpm --filter @invy/api test",
     "lint": "pnpm -r lint",
-    "clean": "rm -rf node_modules apps/*/node_modules packages/*/node_modules apps/*/dist apps/*/.svelte-kit"
+    "clean": "rm -rf node_modules apps/*/node_modules packages/*/node_modules apps/*/dist apps/*/.svelte-kit",
+    "deploy:api:dev": "pnpm --filter @invy/api deploy:dev",
+    "deploy:api:prod": "pnpm --filter @invy/api deploy:prod",
+    "deploy:webapp:dev": "pnpm --filter @invy/webapp build && aws s3 sync apps/webapp/build s3://invy-webapp-dev --delete",
+    "deploy:webapp:prod": "pnpm --filter @invy/webapp build && aws s3 sync apps/webapp/build s3://invy-webapp-prod --delete",
+    "deploy:all:dev": "pnpm deploy:api:dev && pnpm deploy:webapp:dev",
+    "deploy:all:prod": "pnpm deploy:api:prod && pnpm deploy:webapp:prod"
   },
   "devDependencies": {
     "typescript": "^5.7.3"

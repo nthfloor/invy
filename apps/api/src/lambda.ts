@@ -1,8 +1,12 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe, Logger } from '@nestjs/common';
 import { ExpressAdapter } from '@nestjs/platform-express';
-import serverlessExpress from '@vendia/serverless-express';
-import type { Context, APIGatewayProxyEvent } from 'aws-lambda';
+import serverlessExpress from '@codegenie/serverless-express';
+import type {
+  APIGatewayProxyEvent,
+  APIGatewayProxyResult,
+  Context,
+} from 'aws-lambda';
 import express from 'express';
 import helmet from 'helmet';
 
@@ -10,10 +14,9 @@ import { AppModule } from './app.module';
 import { GlobalExceptionFilter } from './shared/filters/http-exception.filter';
 
 // Cache the server instance for warm starts
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let cachedServer: any;
+let cachedServer: ReturnType<typeof serverlessExpress> | null = null;
 
-async function bootstrap() {
+async function bootstrap(): Promise<ReturnType<typeof serverlessExpress>> {
   if (cachedServer) {
     return cachedServer;
   }
@@ -64,7 +67,7 @@ async function bootstrap() {
 export const handler = async (
   event: APIGatewayProxyEvent,
   context: Context,
-) => {
+): Promise<APIGatewayProxyResult> => {
   const server = await bootstrap();
-  return server(event, context, () => {});
+  return server(event, context, () => {}) as Promise<APIGatewayProxyResult>;
 };

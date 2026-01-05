@@ -65,8 +65,8 @@ export class ClientEntity {
   updatedBy?: string;
 
   @CreateDateColumn()
-  createdAt!: Date;
+  createdOn!: Date;
 
   @UpdateDateColumn()
-  updatedAt!: Date;
+  updatedOn!: Date;
 }

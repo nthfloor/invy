@@ -28,7 +28,11 @@ import { PdfModule } from '../shared/pdf/pdf.module';
     PdfModule,
   ],
   controllers: [CreditNoteController],
-  providers: [CreditNoteService, CreditAllocationService, NumberSequenceService],
+  providers: [
+    CreditNoteService,
+    CreditAllocationService,
+    NumberSequenceService,
+  ],
   exports: [CreditNoteService, CreditAllocationService],
 })
 export class CreditNoteModule {}

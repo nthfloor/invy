@@ -5,7 +5,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, In } from 'typeorm';
+import { Repository } from 'typeorm';
 import {
   CreditAllocationEntity,
   AllocationTargetType,
@@ -71,8 +71,17 @@ export class CreditAllocationService {
    * Allocate credit from a credit note to a draft invoice or quote.
    * This reserves the credit but does not apply it until finalized.
    */
-  async allocate(params: AllocateCreditParams): Promise<CreditAllocationEntity> {
-    const { companyId, creditNoteId, targetType, targetId, targetStatus, amount } = params;
+  async allocate(
+    params: AllocateCreditParams,
+  ): Promise<CreditAllocationEntity> {
+    const {
+      companyId,
+      creditNoteId,
+      targetType,
+      targetId,
+      targetStatus,
+      amount,
+    } = params;
 
     // Get the credit note
     const creditNote = await this.creditNoteRepository.findOne({
@@ -80,7 +89,9 @@ export class CreditAllocationService {
     });
 
     if (!creditNote) {
-      throw new NotFoundException(`Credit note with ID ${creditNoteId} not found`);
+      throw new NotFoundException(
+        `Credit note with ID ${creditNoteId} not found`,
+      );
     }
 
     // Credit note must be issued to allocate
@@ -136,7 +147,9 @@ export class CreditAllocationService {
    * Release an allocation back to the credit note.
    * Used when a quote is rejected or draft invoice is cancelled.
    */
-  async release(params: ReleaseAllocationParams): Promise<CreditAllocationEntity> {
+  async release(
+    params: ReleaseAllocationParams,
+  ): Promise<CreditAllocationEntity> {
     const { companyId, allocationId, reason } = params;
 
     const allocation = await this.allocationRepository.findOne({
@@ -144,7 +157,9 @@ export class CreditAllocationService {
     });
 
     if (!allocation) {
-      throw new NotFoundException(`Allocation with ID ${allocationId} not found`);
+      throw new NotFoundException(
+        `Allocation with ID ${allocationId} not found`,
+      );
     }
 
     if (allocation.status !== 'pending') {
@@ -167,7 +182,8 @@ export class CreditAllocationService {
     if (creditNote) {
       creditNote.allocatedAmount =
         Number(creditNote.allocatedAmount) - Number(allocation.amount);
-      creditNote.balance = Number(creditNote.balance) + Number(allocation.amount);
+      creditNote.balance =
+        Number(creditNote.balance) + Number(allocation.amount);
       await this.creditNoteRepository.save(creditNote);
     }
 
@@ -182,7 +198,9 @@ export class CreditAllocationService {
    * Finalize an allocation when the target document is sent/finalized.
    * Moves the amount from allocated to applied.
    */
-  async finalize(params: FinalizeAllocationParams): Promise<CreditAllocationEntity> {
+  async finalize(
+    params: FinalizeAllocationParams,
+  ): Promise<CreditAllocationEntity> {
     const { companyId, allocationId } = params;
 
     const allocation = await this.allocationRepository.findOne({
@@ -190,7 +208,9 @@ export class CreditAllocationService {
     });
 
     if (!allocation) {
-      throw new NotFoundException(`Allocation with ID ${allocationId} not found`);
+      throw new NotFoundException(
+        `Allocation with ID ${allocationId} not found`,
+      );
     }
 
     if (allocation.status !== 'pending') {
@@ -227,7 +247,9 @@ export class CreditAllocationService {
       }
     }
 
-    this.logger.log(`Finalized allocation ${allocationId} (${allocation.amount})`);
+    this.logger.log(
+      `Finalized allocation ${allocationId} (${allocation.amount})`,
+    );
 
     return allocation;
   }
@@ -299,7 +321,9 @@ export class CreditAllocationService {
    * Transfer allocations from one target to another.
    * Used when converting a quote to an invoice.
    */
-  async transfer(params: TransferAllocationsParams): Promise<CreditAllocationEntity[]> {
+  async transfer(
+    params: TransferAllocationsParams,
+  ): Promise<CreditAllocationEntity[]> {
     const {
       companyId,
       fromTargetType,

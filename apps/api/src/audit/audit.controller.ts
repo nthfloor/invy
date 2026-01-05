@@ -131,7 +131,10 @@ export class AuditController {
       'webhook',
     ];
 
-    if (entityType && !validEntityTypes.includes(entityType as AuditEntityType)) {
+    if (
+      entityType &&
+      !validEntityTypes.includes(entityType as AuditEntityType)
+    ) {
       throw new BadRequestException(
         `Invalid entityType. Must be one of: ${validEntityTypes.join(', ')}`,
       );

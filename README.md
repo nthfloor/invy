@@ -26,17 +26,31 @@ Invy is a standalone, API-first invoicing microservice built with NestJS. Design
 - **Quotes & Estimates** - Fixed-price quotes and variable estimates with conversion to invoices
 - **PDF Generation** - Professional documents with company branding (Phase 2)
 
+## Project Structure
+
+This is a pnpm monorepo with two applications:
+
+```
+/Invy
+├── apps/
+│   ├── api/      # NestJS backend (Lambda-deployable)
+│   └── webapp/   # SvelteKit frontend (S3/CloudFront)
+├── pnpm-workspace.yaml
+└── package.json
+```
+
 ## Quick Start
 
 ### Prerequisites
 
-- Node.js 18+
+- Node.js 20+
 - PostgreSQL 14+
+- pnpm 9+
 
 ### Installation
 
 ```bash
-npm install
+pnpm install
 ```
 
 ### Configuration
@@ -88,16 +102,45 @@ Tokens are hashed before storage - save them immediately as they cannot be retri
 
 ## Scripts
 
+### Development
+
 ```bash
-npm run start:dev       # Development with hot reload
-npm run start:prod      # Production mode
-npm run build           # Build for production
-npm run lint            # Run ESLint
-npm run test            # Unit tests
-npm run test:e2e        # End-to-end tests
-npm run generate-token  # Generate API token
-npm run migration:run   # Run migrations
-npm run migration:generate  # Generate migration
+pnpm dev              # Start API in dev mode
+pnpm dev:api          # Start API in dev mode
+pnpm dev:webapp       # Start webapp in dev mode
+```
+
+### Build
+
+```bash
+pnpm build            # Build all packages
+pnpm build:api        # Build API only
+pnpm build:webapp     # Build webapp only
+```
+
+### Deployment
+
+```bash
+pnpm deploy:api:dev      # Deploy API to Lambda (dev stage)
+pnpm deploy:api:prod     # Deploy API to Lambda (prod stage)
+pnpm deploy:webapp:dev   # Build and sync webapp to S3 (dev)
+pnpm deploy:webapp:prod  # Build and sync webapp to S3 (prod)
+pnpm deploy:all:dev      # Deploy both API and webapp (dev)
+pnpm deploy:all:prod     # Deploy both API and webapp (prod)
+```
+
+**What the deploy commands do:**
+
+- **API deployment** (`deploy:api:*`): Builds the NestJS app, bundles it with esbuild, and deploys to AWS Lambda using Serverless Framework. The API runs as a single Lambda function (mono-lambda pattern) with API Gateway routing all requests.
+
+- **Webapp deployment** (`deploy:webapp:*`): Builds the SvelteKit app as a static site, then syncs the output to an S3 bucket. The `--delete` flag removes old files not in the new build. Serve via CloudFront for production.
+
+### Other Commands
+
+```bash
+pnpm test             # Run API tests
+pnpm lint             # Lint all packages
+pnpm clean            # Remove node_modules and build artifacts
 ```
 
 ## Architecture
