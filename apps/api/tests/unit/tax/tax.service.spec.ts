@@ -64,7 +64,9 @@ describe('TaxService', () => {
       });
 
       expect(result).toEqual(mockTax);
-      expect(companyService.exists).toHaveBeenCalledWith({ id: 'company-uuid' });
+      expect(companyService.exists).toHaveBeenCalledWith({
+        id: 'company-uuid',
+      });
       expect(taxRepository.create).toHaveBeenCalled();
       expect(taxRepository.save).toHaveBeenCalled();
     });

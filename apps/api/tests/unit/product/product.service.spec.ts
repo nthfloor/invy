@@ -81,7 +81,9 @@ describe('ProductService', () => {
       });
 
       expect(result).toEqual(mockProduct);
-      expect(companyService.exists).toHaveBeenCalledWith({ id: 'company-uuid' });
+      expect(companyService.exists).toHaveBeenCalledWith({
+        id: 'company-uuid',
+      });
       expect(productRepository.create).toHaveBeenCalled();
       expect(productRepository.save).toHaveBeenCalled();
     });

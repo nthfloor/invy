@@ -87,7 +87,9 @@ describe('ClientService', () => {
       });
 
       expect(result).toEqual(mockClient);
-      expect(companyService.exists).toHaveBeenCalledWith({ id: 'company-uuid' });
+      expect(companyService.exists).toHaveBeenCalledWith({
+        id: 'company-uuid',
+      });
     });
 
     it('should throw BadRequestException if company does not exist', async () => {

@@ -40,7 +40,11 @@ export class CompanyService {
     const company = this.companyRepository.create({
       id: generateUUID(),
       name: dto.name,
+      email: dto.email,
+      phone: dto.phone,
       taxId: dto.taxId,
+      taxNumber: dto.taxNumber,
+      registrationNumber: dto.registrationNumber,
       currency: dto.currency || 'ZAR',
       address: dto.address,
       settings: dto.settings || {
@@ -81,17 +85,13 @@ export class CompanyService {
       }
     }
 
-    if (dto.name !== undefined) company.name = dto.name;
-    if (dto.taxId !== undefined) company.taxId = dto.taxId;
-    if (dto.currency !== undefined) company.currency = dto.currency;
-    if (dto.address !== undefined) company.address = dto.address;
-    if (dto.settings !== undefined) {
-      company.settings = { ...company.settings, ...dto.settings };
-    }
-    if (dto.branding !== undefined) {
-      company.branding = { ...company.branding, ...dto.branding };
-    }
-    if (dto.isActive !== undefined) company.isActive = dto.isActive;
+    // Merge simple fields
+    const { settings, branding, ...simpleFields } = dto;
+    Object.assign(company, simpleFields);
+
+    // Deep merge nested objects
+    if (settings) company.settings = { ...company.settings, ...settings };
+    if (branding) company.branding = { ...company.branding, ...branding };
 
     const saved = await this.companyRepository.save(company);
     this.logger.log(`Updated company: ${saved.id}`);
@@ -127,7 +127,7 @@ export class CompanyService {
       where: { isActive: true },
       skip,
       take,
-      order: { createdAt: 'DESC' },
+      order: { createdOn: 'DESC' },
     });
 
     return createPaginatedResult(data, total, currentPage, itemsPerPage);
