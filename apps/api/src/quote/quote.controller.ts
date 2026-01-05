@@ -312,7 +312,7 @@ export class QuoteController {
     @Res() res: Response,
   ): Promise<void> {
     const quote = await this.quoteService.findById({ id, companyId });
-    const company = await this.companyService.findById(companyId);
+    const company = await this.companyService.findById({ id: companyId });
 
     const pdfBuffer = await this.pdfService.generateQuotePdf(quote, company);
 

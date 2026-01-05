@@ -39,7 +39,7 @@ export class ClientController {
   @ApiResponse({ status: 400, description: 'Invalid company ID' })
   @ApiResponse({ status: 409, description: 'Client with email already exists' })
   create(@Body() dto: CreateClientDto) {
-    return this.clientService.create(dto);
+    return this.clientService.create({ dto });
   }
 
   @Get()

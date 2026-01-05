@@ -21,9 +21,11 @@ export class TaxService {
     private readonly companyService: CompanyService,
   ) {}
 
-  async create(dto: CreateTaxDto): Promise<TaxEntity> {
+  async create({ dto }: { dto: CreateTaxDto }): Promise<TaxEntity> {
     // Validate company exists
-    const companyExists = await this.companyService.exists(dto.companyId);
+    const companyExists = await this.companyService.exists({
+      id: dto.companyId,
+    });
     if (!companyExists) {
       throw new BadRequestException(
         `Company with ID ${dto.companyId} not found`,

@@ -36,9 +36,9 @@ export class PaymentService {
     private readonly numberSequenceService: NumberSequenceService,
   ) {}
 
-  async create(dto: CreatePaymentDto): Promise<PaymentEntity> {
+  async create({ dto }: { dto: CreatePaymentDto }): Promise<PaymentEntity> {
     // Validate company exists
-    await this.companyService.findById(dto.companyId);
+    await this.companyService.findById({ id: dto.companyId });
 
     // Validate invoice exists and get its details
     const invoice = await this.invoiceService.findById({
@@ -136,10 +136,16 @@ export class PaymentService {
       `Created payment ${paymentNumber} for ${dto.amount} on invoice ${invoice.invoiceNumber}`,
     );
 
-    return this.findById(savedPayment.id, dto.companyId);
+    return this.findById({ id: savedPayment.id, companyId: dto.companyId });
   }
 
-  async findById(id: string, companyId: string): Promise<PaymentEntity> {
+  async findById({
+    id,
+    companyId,
+  }: {
+    id: string;
+    companyId: string;
+  }): Promise<PaymentEntity> {
     const payment = await this.paymentRepository.findOne({
       where: { id, companyId },
       relations: ['client', 'invoice', 'allocations'],
@@ -202,10 +208,13 @@ export class PaymentService {
     return createPaginatedResult(data, total, currentPage, itemsPerPage);
   }
 
-  async findByInvoice(
-    invoiceId: string,
-    companyId: string,
-  ): Promise<PaymentEntity[]> {
+  async findByInvoice({
+    invoiceId,
+    companyId,
+  }: {
+    invoiceId: string;
+    companyId: string;
+  }): Promise<PaymentEntity[]> {
     return this.paymentRepository.find({
       where: { invoiceId, companyId },
       relations: ['allocations'],
@@ -213,10 +222,13 @@ export class PaymentService {
     });
   }
 
-  async getPaymentSummary(
-    invoiceId: string,
-    companyId: string,
-  ): Promise<{
+  async getPaymentSummary({
+    invoiceId,
+    companyId,
+  }: {
+    invoiceId: string;
+    companyId: string;
+  }): Promise<{
     invoiceTotal: number;
     totalPaid: number;
     balance: number;
@@ -226,7 +238,7 @@ export class PaymentService {
       id: invoiceId,
       companyId,
     });
-    const payments = await this.findByInvoice(invoiceId, companyId);
+    const payments = await this.findByInvoice({ invoiceId, companyId });
 
     return {
       invoiceTotal: Number(invoice.total),
@@ -245,7 +257,7 @@ export class PaymentService {
     companyId: string;
     reason?: string;
   }): Promise<PaymentEntity> {
-    const payment = await this.findById(id, companyId);
+    const payment = await this.findById({ id, companyId });
 
     if (payment.status === 'refunded') {
       throw new BadRequestException('Payment is already refunded');

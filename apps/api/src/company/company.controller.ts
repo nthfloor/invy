@@ -40,7 +40,7 @@ export class CompanyController {
     description: 'Company with tax ID already exists',
   })
   create(@Body() dto: CreateCompanyDto) {
-    return this.companyService.create(dto);
+    return this.companyService.create({ dto });
   }
 
   @Get()
@@ -48,7 +48,7 @@ export class CompanyController {
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'perPage', required: false, type: Number })
   findAll(@Query('page') page?: number, @Query('perPage') perPage?: number) {
-    return this.companyService.findAll(page, perPage);
+    return this.companyService.findAll({ page, perPage });
   }
 
   @Get(':id')
@@ -56,7 +56,7 @@ export class CompanyController {
   @ApiResponse({ status: 200, description: 'Company found' })
   @ApiResponse({ status: 404, description: 'Company not found' })
   findOne(@Param('id', ParseUUIDPipe) id: string) {
-    return this.companyService.findById(id);
+    return this.companyService.findById({ id });
   }
 
   @Put(':id')
@@ -68,7 +68,7 @@ export class CompanyController {
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateCompanyDto,
   ) {
-    return this.companyService.update(id, dto);
+    return this.companyService.update({ id, dto });
   }
 
   @Delete(':id')
@@ -78,6 +78,6 @@ export class CompanyController {
   @ApiResponse({ status: 204, description: 'Company archived successfully' })
   @ApiResponse({ status: 404, description: 'Company not found' })
   archive(@Param('id', ParseUUIDPipe) id: string) {
-    return this.companyService.archive(id);
+    return this.companyService.archive({ id });
   }
 }

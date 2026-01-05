@@ -38,7 +38,7 @@ export class ProductController {
   @ApiResponse({ status: 201, description: 'Product created successfully' })
   @ApiResponse({ status: 400, description: 'Invalid company ID' })
   create(@Body() dto: CreateProductDto) {
-    return this.productService.create(dto);
+    return this.productService.create({ dto });
   }
 
   @Get()

@@ -119,7 +119,7 @@ export class StatementController {
       endDate: endDate ? new Date(endDate) : undefined,
     });
 
-    const company = await this.companyService.findById(companyId);
+    const company = await this.companyService.findById({ id: companyId });
     const pdfBuffer = await this.pdfService.generateClientStatementPdf(
       statement,
       company,
@@ -190,7 +190,7 @@ export class StatementController {
       companyId,
     });
 
-    const company = await this.companyService.findById(companyId);
+    const company = await this.companyService.findById({ id: companyId });
     const pdfBuffer = await this.pdfService.generateInvoiceStatementPdf(
       statement,
       company,

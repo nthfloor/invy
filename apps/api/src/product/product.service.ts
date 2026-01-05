@@ -26,9 +26,11 @@ export class ProductService {
     private readonly companyService: CompanyService,
   ) {}
 
-  async create(dto: CreateProductDto): Promise<ProductEntity> {
+  async create({ dto }: { dto: CreateProductDto }): Promise<ProductEntity> {
     // Validate company exists
-    const companyExists = await this.companyService.exists(dto.companyId);
+    const companyExists = await this.companyService.exists({
+      id: dto.companyId,
+    });
     if (!companyExists) {
       throw new BadRequestException(
         `Company with ID ${dto.companyId} not found`,

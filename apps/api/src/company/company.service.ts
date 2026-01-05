@@ -24,7 +24,7 @@ export class CompanyService {
     private readonly companyRepository: Repository<CompanyEntity>,
   ) {}
 
-  async create(dto: CreateCompanyDto): Promise<CompanyEntity> {
+  async create({ dto }: { dto: CreateCompanyDto }): Promise<CompanyEntity> {
     // Check for duplicate taxId if provided
     if (dto.taxId) {
       const existing = await this.companyRepository.findOne({
@@ -60,8 +60,14 @@ export class CompanyService {
     return saved;
   }
 
-  async update(id: string, dto: UpdateCompanyDto): Promise<CompanyEntity> {
-    const company = await this.findById(id);
+  async update({
+    id,
+    dto,
+  }: {
+    id: string;
+    dto: UpdateCompanyDto;
+  }): Promise<CompanyEntity> {
+    const company = await this.findById({ id });
 
     // Check for duplicate taxId if being changed
     if (dto.taxId && dto.taxId !== company.taxId) {
@@ -93,7 +99,7 @@ export class CompanyService {
     return saved;
   }
 
-  async findById(id: string): Promise<CompanyEntity> {
+  async findById({ id }: { id: string }): Promise<CompanyEntity> {
     const company = await this.companyRepository.findOne({ where: { id } });
 
     if (!company) {
@@ -103,10 +109,13 @@ export class CompanyService {
     return company;
   }
 
-  async findAll(
-    page?: number,
-    perPage?: number,
-  ): Promise<PaginatedResult<CompanyEntity>> {
+  async findAll({
+    page,
+    perPage,
+  }: {
+    page?: number;
+    perPage?: number;
+  } = {}): Promise<PaginatedResult<CompanyEntity>> {
     const {
       skip,
       take,
@@ -124,14 +133,14 @@ export class CompanyService {
     return createPaginatedResult(data, total, currentPage, itemsPerPage);
   }
 
-  async archive(id: string): Promise<void> {
-    const company = await this.findById(id);
+  async archive({ id }: { id: string }): Promise<void> {
+    const company = await this.findById({ id });
     company.isActive = false;
     await this.companyRepository.save(company);
     this.logger.log(`Archived company: ${id}`);
   }
 
-  async exists(id: string): Promise<boolean> {
+  async exists({ id }: { id: string }): Promise<boolean> {
     const count = await this.companyRepository.count({ where: { id } });
     return count > 0;
   }

@@ -38,7 +38,7 @@ export class TaxController {
   @ApiResponse({ status: 201, description: 'Tax created successfully' })
   @ApiResponse({ status: 400, description: 'Invalid company ID' })
   create(@Body() dto: CreateTaxDto) {
-    return this.taxService.create(dto);
+    return this.taxService.create({ dto });
   }
 
   @Get()

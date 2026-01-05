@@ -54,7 +54,7 @@ export class CreditNoteController {
   @ApiResponse({ status: 201, description: 'Credit note created successfully' })
   @ApiResponse({ status: 400, description: 'Invalid input' })
   create(@Body() dto: CreateCreditNoteDto) {
-    return this.creditNoteService.create(dto);
+    return this.creditNoteService.create({ dto });
   }
 
   @Get()
@@ -102,7 +102,7 @@ export class CreditNoteController {
     if (!companyId) {
       throw new BadRequestException('companyId is required');
     }
-    return this.creditNoteService.findById(id, companyId);
+    return this.creditNoteService.findById({ id, companyId });
   }
 
   @Put(':id')
@@ -140,7 +140,7 @@ export class CreditNoteController {
     if (!companyId) {
       throw new BadRequestException('companyId is required');
     }
-    return this.creditNoteService.issue(id, companyId);
+    return this.creditNoteService.issue({ id, companyId });
   }
 
   @Post(':id/apply')
@@ -257,8 +257,8 @@ export class CreditNoteController {
       throw new BadRequestException('companyId is required');
     }
 
-    const creditNote = await this.creditNoteService.findById(id, companyId);
-    const company = await this.companyService.findById(companyId);
+    const creditNote = await this.creditNoteService.findById({ id, companyId });
+    const company = await this.companyService.findById({ id: companyId });
 
     const pdfBuffer = await this.pdfService.generateCreditNotePdf(
       creditNote,

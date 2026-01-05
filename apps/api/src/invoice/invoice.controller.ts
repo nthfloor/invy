@@ -52,7 +52,7 @@ export class InvoiceController {
   @ApiResponse({ status: 201, description: 'Invoice created successfully' })
   @ApiResponse({ status: 400, description: 'Invalid input' })
   create(@Body() dto: CreateInvoiceDto) {
-    return this.invoiceService.create(dto);
+    return this.invoiceService.create({ dto });
   }
 
   @Get()
@@ -285,7 +285,7 @@ export class InvoiceController {
     }
 
     const invoice = await this.invoiceService.findById({ id, companyId });
-    const company = await this.companyService.findById(companyId);
+    const company = await this.companyService.findById({ id: companyId });
 
     const pdfBuffer = await this.pdfService.generateInvoicePdf(
       invoice,

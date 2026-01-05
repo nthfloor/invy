@@ -68,20 +68,20 @@ export class StatementService {
       startDate || new Date(periodEnd.getTime() - 30 * 24 * 60 * 60 * 1000);
 
     // Get opening balance (sum of all unpaid invoices before start date)
-    const openingBalance = await this.calculateOpeningBalance(
+    const openingBalance = await this.calculateOpeningBalance({
       clientId,
       companyId,
-      periodStart,
-    );
+      beforeDate: periodStart,
+    });
 
     // Get all transactions in period
-    const lineItems = await this.getTransactionsInPeriod(
+    const lineItems = await this.getTransactionsInPeriod({
       clientId,
       companyId,
-      periodStart,
-      periodEnd,
+      startDate: periodStart,
+      endDate: periodEnd,
       openingBalance,
-    );
+    });
 
     // Calculate totals
     let totalInvoiced = 0;
@@ -119,11 +119,15 @@ export class StatementService {
     };
   }
 
-  private async calculateOpeningBalance(
-    clientId: string,
-    companyId: string,
-    beforeDate: Date,
-  ): Promise<number> {
+  private async calculateOpeningBalance({
+    clientId,
+    companyId,
+    beforeDate,
+  }: {
+    clientId: string;
+    companyId: string;
+    beforeDate: Date;
+  }): Promise<number> {
     // Sum of invoice balances before the period
     const result = await this.invoiceRepository
       .createQueryBuilder('invoice')
@@ -137,13 +141,19 @@ export class StatementService {
     return parseFloat(result?.balance ?? '0');
   }
 
-  private async getTransactionsInPeriod(
-    clientId: string,
-    companyId: string,
-    startDate: Date,
-    endDate: Date,
-    openingBalance: number,
-  ): Promise<StatementLineItemDto[]> {
+  private async getTransactionsInPeriod({
+    clientId,
+    companyId,
+    startDate,
+    endDate,
+    openingBalance,
+  }: {
+    clientId: string;
+    companyId: string;
+    startDate: Date;
+    endDate: Date;
+    openingBalance: number;
+  }): Promise<StatementLineItemDto[]> {
     const transactions: StatementLineItemDto[] = [];
 
     // Get invoices in period

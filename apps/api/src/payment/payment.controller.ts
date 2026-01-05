@@ -44,7 +44,7 @@ export class PaymentController {
     description: 'Invalid payment or exceeds balance',
   })
   create(@Body() dto: CreatePaymentDto) {
-    return this.paymentService.create(dto);
+    return this.paymentService.create({ dto });
   }
 
   @Get()
@@ -92,7 +92,7 @@ export class PaymentController {
     if (!companyId) {
       throw new BadRequestException('companyId is required');
     }
-    return this.paymentService.findById(id, companyId);
+    return this.paymentService.findById({ id, companyId });
   }
 
   @Get('invoice/:invoiceId')
@@ -106,7 +106,7 @@ export class PaymentController {
     if (!companyId) {
       throw new BadRequestException('companyId is required');
     }
-    return this.paymentService.findByInvoice(invoiceId, companyId);
+    return this.paymentService.findByInvoice({ invoiceId, companyId });
   }
 
   @Get('invoice/:invoiceId/summary')
@@ -124,7 +124,7 @@ export class PaymentController {
     if (!companyId) {
       throw new BadRequestException('companyId is required');
     }
-    return this.paymentService.getPaymentSummary(invoiceId, companyId);
+    return this.paymentService.getPaymentSummary({ invoiceId, companyId });
   }
 
   @Post(':id/refund')

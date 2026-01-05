@@ -42,9 +42,9 @@ export class InvoiceService {
     private readonly numberSequenceService: NumberSequenceService,
   ) {}
 
-  async create(dto: CreateInvoiceDto): Promise<InvoiceEntity> {
+  async create({ dto }: { dto: CreateInvoiceDto }): Promise<InvoiceEntity> {
     // Validate company exists and get settings
-    const company = await this.companyService.findById(dto.companyId);
+    const company = await this.companyService.findById({ id: dto.companyId });
 
     // Validate client exists
     const clientExists = await this.clientService.exists({

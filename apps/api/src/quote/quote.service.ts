@@ -69,7 +69,7 @@ export class QuoteService {
     isFixedPrice: boolean;
   }): Promise<QuoteEntity> {
     // Validate company exists and get settings
-    const company = await this.companyService.findById(dto.companyId);
+    const company = await this.companyService.findById({ id: dto.companyId });
 
     // Validate client exists
     const clientExists = await this.clientService.exists({
@@ -327,7 +327,7 @@ export class QuoteService {
     }
 
     // Get company for invoice number generation
-    const company = await this.companyService.findById(companyId);
+    const company = await this.companyService.findById({ id: companyId });
     const prefix = company.settings?.invoicePrefix || 'INV';
     const invoiceNumber = await this.numberSequenceService.getNextNumber({
       companyId,

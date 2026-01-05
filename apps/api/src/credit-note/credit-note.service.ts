@@ -45,9 +45,13 @@ export class CreditNoteService {
     private readonly numberSequenceService: NumberSequenceService,
   ) {}
 
-  async create(dto: CreateCreditNoteDto): Promise<CreditNoteEntity> {
+  async create({
+    dto,
+  }: {
+    dto: CreateCreditNoteDto;
+  }): Promise<CreditNoteEntity> {
     // Validate company exists
-    const company = await this.companyService.findById(dto.companyId);
+    const company = await this.companyService.findById({ id: dto.companyId });
 
     // Validate client exists
     const clientExists = await this.clientService.exists({
@@ -116,7 +120,10 @@ export class CreditNoteService {
     await this.itemRepository.save(items);
 
     // Calculate totals
-    return this.recalculateTotals(savedCreditNote.id, dto.companyId);
+    return this.recalculateTotals({
+      id: savedCreditNote.id,
+      companyId: dto.companyId,
+    });
   }
 
   private createCreditNoteItem({
@@ -147,11 +154,14 @@ export class CreditNoteService {
     });
   }
 
-  async recalculateTotals(
-    id: string,
-    companyId: string,
-  ): Promise<CreditNoteEntity> {
-    const creditNote = await this.findById(id, companyId);
+  async recalculateTotals({
+    id,
+    companyId,
+  }: {
+    id: string;
+    companyId: string;
+  }): Promise<CreditNoteEntity> {
+    const creditNote = await this.findById({ id, companyId });
 
     const items = await this.itemRepository.find({
       where: { creditNoteId: id },
@@ -189,7 +199,7 @@ export class CreditNoteService {
     companyId: string;
     dto: UpdateCreditNoteDto;
   }): Promise<CreditNoteEntity> {
-    const creditNote = await this.findById(id, companyId);
+    const creditNote = await this.findById({ id, companyId });
 
     // Only draft credit notes can be edited
     if (creditNote.status !== 'draft') {
@@ -209,7 +219,13 @@ export class CreditNoteService {
     return saved;
   }
 
-  async issue(id: string, companyId: string): Promise<CreditNoteEntity> {
+  async issue({
+    id,
+    companyId,
+  }: {
+    id: string;
+    companyId: string;
+  }): Promise<CreditNoteEntity> {
     return this.transitionStatus({ id, companyId, newStatus: 'issued' });
   }
 
@@ -222,7 +238,7 @@ export class CreditNoteService {
     companyId: string;
     dto: ApplyCreditNoteDto;
   }): Promise<CreditNoteEntity> {
-    const creditNote = await this.findById(id, companyId);
+    const creditNote = await this.findById({ id, companyId });
 
     if (creditNote.status !== 'issued') {
       throw new BadRequestException(
@@ -276,7 +292,7 @@ export class CreditNoteService {
     companyId: string;
     dto: VoidCreditNoteDto;
   }): Promise<CreditNoteEntity> {
-    const creditNote = await this.findById(id, companyId);
+    const creditNote = await this.findById({ id, companyId });
 
     if (creditNote.status === 'applied') {
       throw new BadRequestException(
@@ -306,7 +322,7 @@ export class CreditNoteService {
     companyId: string;
     newStatus: CreditNoteStatus;
   }): Promise<CreditNoteEntity> {
-    const creditNote = await this.findById(id, companyId);
+    const creditNote = await this.findById({ id, companyId });
 
     const validTransitions = VALID_CREDIT_NOTE_TRANSITIONS[creditNote.status];
     if (!validTransitions.includes(newStatus)) {
@@ -322,7 +338,13 @@ export class CreditNoteService {
     return saved;
   }
 
-  async findById(id: string, companyId: string): Promise<CreditNoteEntity> {
+  async findById({
+    id,
+    companyId,
+  }: {
+    id: string;
+    companyId: string;
+  }): Promise<CreditNoteEntity> {
     const creditNote = await this.creditNoteRepository.findOne({
       where: { id, companyId },
       relations: ['items', 'client', 'invoice'],
@@ -399,7 +421,7 @@ export class CreditNoteService {
     companyId: string;
     dto: CreateCreditNoteItemDto;
   }): Promise<CreditNoteEntity> {
-    const creditNote = await this.findById(creditNoteId, companyId);
+    const creditNote = await this.findById({ id: creditNoteId, companyId });
 
     if (creditNote.status !== 'draft') {
       throw new BadRequestException('Can only add items to draft credit notes');
@@ -418,7 +440,7 @@ export class CreditNoteService {
     });
     await this.itemRepository.save(item);
 
-    return this.recalculateTotals(creditNoteId, companyId);
+    return this.recalculateTotals({ id: creditNoteId, companyId });
   }
 
   async updateItem({
@@ -432,7 +454,7 @@ export class CreditNoteService {
     companyId: string;
     dto: Partial<CreateCreditNoteItemDto>;
   }): Promise<CreditNoteEntity> {
-    const creditNote = await this.findById(creditNoteId, companyId);
+    const creditNote = await this.findById({ id: creditNoteId, companyId });
 
     if (creditNote.status !== 'draft') {
       throw new BadRequestException(
@@ -461,7 +483,7 @@ export class CreditNoteService {
 
     await this.itemRepository.save(item);
 
-    return this.recalculateTotals(creditNoteId, companyId);
+    return this.recalculateTotals({ id: creditNoteId, companyId });
   }
 
   async removeItem({
@@ -473,7 +495,7 @@ export class CreditNoteService {
     itemId: string;
     companyId: string;
   }): Promise<CreditNoteEntity> {
-    const creditNote = await this.findById(creditNoteId, companyId);
+    const creditNote = await this.findById({ id: creditNoteId, companyId });
 
     if (creditNote.status !== 'draft') {
       throw new BadRequestException(
@@ -491,6 +513,6 @@ export class CreditNoteService {
 
     await this.itemRepository.remove(item);
 
-    return this.recalculateTotals(creditNoteId, companyId);
+    return this.recalculateTotals({ id: creditNoteId, companyId });
   }
 }
