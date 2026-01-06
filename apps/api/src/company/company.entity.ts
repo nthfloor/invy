@@ -6,6 +6,7 @@ import {
   UpdateDateColumn,
   Index,
 } from 'typeorm';
+import { DEFAULT_CURRENCY } from '../shared/constants/currencies';
 
 export interface CompanyAddress {
   line1?: string;
@@ -54,7 +55,7 @@ export class CompanyEntity {
   @Column({ type: 'varchar', length: 100, nullable: true })
   registrationNumber?: string; // Company registration number
 
-  @Column({ type: 'varchar', length: 3, default: 'ZAR' })
+  @Column({ type: 'varchar', length: 3, default: DEFAULT_CURRENCY })
   currency!: string;
 
   @Column('jsonb', { nullable: true })

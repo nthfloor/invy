@@ -38,7 +38,7 @@
 				name: product.name,
 				description: product.description || '',
 				unitPrice: product.unitPrice,
-				currency: product.currency,
+				currency: product.currency || 'ZAR',
 				taxRate: product.taxRate || 15,
 				isActive: product.isActive
 			};
@@ -54,7 +54,14 @@
 		saving = true;
 		error = null;
 		try {
-			await productsApi.update(productId, companyId, formData);
+			await productsApi.update(productId, companyId, {
+				name: formData.name,
+				description: formData.description || undefined,
+				unitPrice: formData.unitPrice,
+				currency: formData.currency,
+				taxRate: formData.taxRate,
+				isActive: formData.isActive
+			});
 			goto(`/companies/${companyId}/products`);
 		} catch (e) {
 			error = e instanceof Error ? e.message : 'Failed to save product';

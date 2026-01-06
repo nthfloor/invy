@@ -8,9 +8,9 @@ import {
   BalanceType,
 } from '../entities/blnk-balance-mapping.entity';
 import { BlnkClientService, BlnkTransaction } from './blnk-client.service';
+import { DEFAULT_CURRENCY } from '../../shared/constants/currencies';
 
 const SYSTEM_LEDGER_NAME = 'Invy';
-const DEFAULT_CURRENCY = 'ZAR';
 
 // Re-export for consumers
 export type { BlnkTransaction };

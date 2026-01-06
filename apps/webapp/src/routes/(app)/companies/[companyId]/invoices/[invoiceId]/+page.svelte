@@ -3,6 +3,7 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import { invoicesApi, paymentsApi, productsApi, type Invoice, type Payment, type Product, type InvoiceItem } from '$lib/api/client';
+	import ConfirmDeleteModal from '$lib/components/ConfirmDeleteModal.svelte';
 
 	let companyId = $derived($page.params.companyId);
 	let invoiceId = $derived($page.params.invoiceId);
@@ -18,6 +19,8 @@
 	let saving = $state(false);
 	let showAddItemModal = $state(false);
 	let editingItemId = $state<string | null>(null);
+	let showDeleteItemModal = $state(false);
+	let itemToDelete = $state<InvoiceItem | null>(null);
 
 	let paymentForm = $state({
 		amount: 0,
@@ -248,22 +251,17 @@
 		saving = true;
 		error = null;
 		try {
+			const itemData = {
+				productId: itemForm.productId || undefined,
+				description: itemForm.description,
+				quantity: Number(itemForm.quantity),
+				unitPrice: Number(itemForm.unitPrice),
+				taxRate: Number(itemForm.taxRate)
+			};
 			if (editingItemId) {
-				await invoicesApi.updateItem(invoiceId, editingItemId, companyId, {
-					productId: itemForm.productId || undefined,
-					description: itemForm.description,
-					quantity: itemForm.quantity,
-					unitPrice: itemForm.unitPrice,
-					taxRate: itemForm.taxRate
-				});
+				await invoicesApi.updateItem(invoiceId, editingItemId, companyId, itemData);
 			} else {
-				await invoicesApi.addItem(invoiceId, companyId, {
-					productId: itemForm.productId || undefined,
-					description: itemForm.description,
-					quantity: itemForm.quantity,
-					unitPrice: itemForm.unitPrice,
-					taxRate: itemForm.taxRate
-				});
+				await invoicesApi.addItem(invoiceId, companyId, itemData);
 			}
 			await loadInvoice();
 			showAddItemModal = false;
@@ -275,12 +273,17 @@
 		}
 	}
 
-	async function removeItem(itemId: string) {
-		if (!companyId || !invoiceId) return;
-		if (!confirm('Are you sure you want to remove this item?')) return;
+	function openDeleteItemModal(item: InvoiceItem) {
+		itemToDelete = item;
+		showDeleteItemModal = true;
+	}
+
+	async function removeItem() {
+		if (!companyId || !invoiceId || !itemToDelete) return;
 		try {
-			await invoicesApi.removeItem(invoiceId, itemId, companyId);
+			await invoicesApi.removeItem(invoiceId, itemToDelete.id, companyId);
 			await loadInvoice();
+			itemToDelete = null;
 		} catch (e) {
 			error = e instanceof Error ? e.message : 'Failed to remove item';
 		}
@@ -462,10 +465,10 @@
 										<tr class="border-t border-surface-200">
 											<td class="px-4 py-3 text-surface-900">{item.description}</td>
 											<td class="px-4 py-3 text-right text-surface-600">{item.quantity}</td>
-											<td class="px-4 py-3 text-right text-surface-600">{formatCurrency(item.unitPrice)}</td>
-											<td class="px-4 py-3 text-right text-surface-600">{item.taxRate}%</td>
+											<td class="px-4 py-3 text-right text-surface-600">{formatCurrency(item.unitPrice || 0)}</td>
+											<td class="px-4 py-3 text-right text-surface-600">{item.taxRate || 0}%</td>
 											<td class="px-4 py-3 text-right font-medium text-surface-900">
-												{formatCurrency(item.lineTotal + item.lineTax)}
+												{formatCurrency((Number(item.lineTotal) || 0) + (Number(item.lineTax) || 0))}
 											</td>
 											{#if isEditing}
 												<td class="px-2 py-3">
@@ -479,7 +482,7 @@
 														</button>
 														<button
 															class="p-1 hover:bg-red-50 rounded text-surface-500 hover:text-red-600"
-															onclick={() => removeItem(item.id)}
+															onclick={() => openDeleteItemModal(item)}
 															title="Remove item"
 														>
 															<span class="material-icons text-sm">delete</span>
@@ -505,26 +508,26 @@
 						<div class="w-72 space-y-2">
 							<div class="flex justify-between text-sm">
 								<span class="text-surface-500">Subtotal</span>
-								<span class="text-surface-900">{formatCurrency(invoice.subtotal)}</span>
+								<span class="text-surface-900">{formatCurrency(invoice.subtotal || 0)}</span>
 							</div>
 							<div class="flex justify-between text-sm">
 								<span class="text-surface-500">Tax</span>
-								<span class="text-surface-900">{formatCurrency(invoice.taxTotal)}</span>
+								<span class="text-surface-900">{formatCurrency(invoice.taxTotal || 0)}</span>
 							</div>
 							<div class="flex justify-between text-base font-semibold border-t border-surface-200 pt-2">
 								<span class="text-surface-900">Total</span>
-								<span class="text-surface-900">{formatCurrency(invoice.total)}</span>
+								<span class="text-surface-900">{formatCurrency(invoice.total || 0)}</span>
 							</div>
-							{#if invoice.amountPaid > 0}
+							{#if (invoice.amountPaid || 0) > 0}
 								<div class="flex justify-between text-sm text-green-600">
 									<span>Amount Paid</span>
-									<span>-{formatCurrency(invoice.amountPaid)}</span>
+									<span>-{formatCurrency(invoice.amountPaid || 0)}</span>
 								</div>
 							{/if}
 							<div class="flex justify-between text-base font-semibold border-t border-surface-200 pt-2">
 								<span class="text-surface-900">Balance Due</span>
-								<span class="text-surface-900 {invoice.balance > 0 ? '' : 'text-green-600'}">
-									{formatCurrency(invoice.balance)}
+								<span class="text-surface-900 {(invoice.balance || 0) > 0 ? '' : 'text-green-600'}">
+									{formatCurrency(invoice.balance || 0)}
 								</span>
 							</div>
 						</div>
@@ -578,16 +581,16 @@
 					<div class="space-y-3">
 						<div class="flex justify-between">
 							<span class="text-surface-500">Total Amount</span>
-							<span class="font-medium text-surface-900">{formatCurrency(invoice.total)}</span>
+							<span class="font-medium text-surface-900">{formatCurrency(invoice.total || 0)}</span>
 						</div>
 						<div class="flex justify-between">
 							<span class="text-surface-500">Amount Paid</span>
-							<span class="font-medium text-green-600">{formatCurrency(invoice.amountPaid)}</span>
+							<span class="font-medium text-green-600">{formatCurrency(invoice.amountPaid || 0)}</span>
 						</div>
 						<div class="flex justify-between border-t border-surface-200 pt-3">
 							<span class="font-medium text-surface-900">Balance Due</span>
-							<span class="font-semibold {invoice.balance > 0 ? 'text-red-600' : 'text-green-600'}">
-								{formatCurrency(invoice.balance)}
+							<span class="font-semibold {(invoice.balance || 0) > 0 ? 'text-red-600' : 'text-green-600'}">
+								{formatCurrency(invoice.balance || 0)}
 							</span>
 						</div>
 					</div>
@@ -763,7 +766,7 @@
 					<div class="flex justify-between text-sm">
 						<span class="text-surface-500">Line Total:</span>
 						<span class="font-medium text-surface-900">
-							{formatCurrency(itemForm.quantity * itemForm.unitPrice * (1 + itemForm.taxRate / 100))}
+							{formatCurrency((Number(itemForm.quantity) || 0) * (Number(itemForm.unitPrice) || 0) * (1 + (Number(itemForm.taxRate) || 0) / 100))}
 						</span>
 					</div>
 				</div>
@@ -779,3 +782,11 @@
 		</div>
 	</div>
 {/if}
+
+<ConfirmDeleteModal
+	bind:open={showDeleteItemModal}
+	title="Remove Line Item"
+	message="Are you sure you want to remove"
+	itemName={itemToDelete?.description || 'this item'}
+	onConfirm={removeItem}
+/>

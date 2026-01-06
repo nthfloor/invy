@@ -15,10 +15,12 @@ function createAuthStore() {
 		user: User | null;
 		loading: boolean;
 		initialized: boolean;
+		companyId: string | null; // Stored separately so it persists before user loads
 	}>({
 		user: null,
 		loading: false,
-		initialized: false
+		initialized: false,
+		companyId: null
 	});
 
 	return {
@@ -38,11 +40,13 @@ function createAuthStore() {
 				companyId: undefined
 			};
 
-			set({
+			// Use update to preserve existing companyId from URL
+			update((state) => ({
+				...state,
 				user: mockUser,
 				loading: false,
 				initialized: true
-			});
+			}));
 		},
 
 		// Login - will use Cognito hosted UI when integrated
@@ -65,7 +69,7 @@ function createAuthStore() {
 		setCompany: (companyId: string) => {
 			update((state) => ({
 				...state,
-				user: state.user ? { ...state.user, companyId } : null
+				companyId
 			}));
 		},
 
@@ -86,4 +90,4 @@ export const auth = createAuthStore();
 export const user = derived(auth, ($auth) => $auth.user);
 export const isAuthenticated = derived(auth, ($auth) => $auth.user !== null);
 export const isLoading = derived(auth, ($auth) => $auth.loading);
-export const currentCompanyId = derived(auth, ($auth) => $auth.user?.companyId);
+export const currentCompanyId = derived(auth, ($auth) => $auth.companyId);

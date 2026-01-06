@@ -11,9 +11,21 @@
 	let loading = $state(true);
 	let error = $state<string | null>(null);
 	let statusFilter = $state('');
+	let searchQuery = $state('');
+	let searchTimeout: ReturnType<typeof setTimeout>;
 
 	onMount(async () => {
 		await loadInvoices();
+	});
+
+	// Debounced search
+	$effect(() => {
+		// Track searchQuery dependency
+		const _query = searchQuery;
+		clearTimeout(searchTimeout);
+		searchTimeout = setTimeout(() => {
+			loadInvoices();
+		}, 300);
 	});
 
 	async function loadInvoices() {
@@ -21,7 +33,10 @@
 		loading = true;
 		error = null;
 		try {
-			const result = await invoicesApi.list(companyId, { status: statusFilter || undefined });
+			const result = await invoicesApi.list(companyId, {
+				status: statusFilter || undefined,
+				search: searchQuery || undefined
+			});
 			invoices = result.data;
 		} catch (e) {
 			error = e instanceof Error ? e.message : 'Failed to load invoices';
@@ -128,27 +143,38 @@
 		</div>
 	</div>
 
-	<!-- Filters -->
-	<div class="mb-6 flex gap-2">
-		<button
-			class="px-3 py-1.5 rounded-full text-sm font-medium transition-colors {!statusFilter
-				? 'bg-primary-600 text-white'
-				: 'bg-surface-200 text-surface-600 hover:bg-surface-300'}"
-			onclick={() => (statusFilter = '')}
-		>
-			All
-		</button>
-		{#each ['draft', 'sent', 'paid', 'overdue'] as status}
+	<!-- Search and Filters -->
+	<div class="mb-6 flex flex-col sm:flex-row gap-4">
+		<div class="flex items-center flex-1 max-w-md border border-surface-300 rounded-lg bg-white focus-within:ring-2 focus-within:ring-primary-500 focus-within:border-primary-500">
+			<span class="pl-3 text-surface-400 material-icons text-lg">search</span>
+			<input
+				type="text"
+				placeholder="Search invoices..."
+				class="flex-1 px-3 py-2 bg-transparent border-none focus:outline-none focus:ring-0"
+				bind:value={searchQuery}
+			/>
+		</div>
+		<div class="flex gap-2 flex-wrap">
 			<button
-				class="px-3 py-1.5 rounded-full text-sm font-medium transition-colors capitalize {statusFilter ===
-				status
+				class="px-3 py-1.5 rounded-full text-sm font-medium transition-colors {!statusFilter
 					? 'bg-primary-600 text-white'
 					: 'bg-surface-200 text-surface-600 hover:bg-surface-300'}"
-				onclick={() => (statusFilter = status)}
+				onclick={() => (statusFilter = '')}
 			>
-				{status}
+				All
 			</button>
-		{/each}
+			{#each ['draft', 'sent', 'paid', 'overdue'] as status}
+				<button
+					class="px-3 py-1.5 rounded-full text-sm font-medium transition-colors capitalize {statusFilter ===
+					status
+						? 'bg-primary-600 text-white'
+						: 'bg-surface-200 text-surface-600 hover:bg-surface-300'}"
+					onclick={() => (statusFilter = status)}
+				>
+					{status}
+				</button>
+			{/each}
+		</div>
 	</div>
 
 	{#if loading}
@@ -213,10 +239,10 @@
 									{/if}
 									<button
 										class="p-1 hover:bg-surface-100 rounded"
-										title="View"
+										title="Edit"
 										onclick={(e) => { e.stopPropagation(); viewInvoice(invoice); }}
 									>
-										<span class="material-icons text-lg text-surface-500">visibility</span>
+										<span class="material-icons text-lg text-surface-500">edit</span>
 									</button>
 									<button
 										class="p-1 hover:bg-surface-100 rounded"

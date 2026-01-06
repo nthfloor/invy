@@ -1,8 +1,36 @@
 <script lang="ts">
 	import { page } from '$app/stores';
-	import { user, currentCompanyId } from '$lib/stores/auth';
+	import { auth, user, currentCompanyId } from '$lib/stores/auth';
+	import { companiesApi, type Company } from '$lib/api/client';
 
 	let { children } = $props();
+
+	// Extract companyId from URL pathname (more reliable for nested routes)
+	let urlCompanyId = $derived.by(() => {
+		const match = $page.url.pathname.match(/\/companies\/([^/]+)/);
+		return match ? match[1] : null;
+	});
+
+	// Sync URL company to store on load/navigation (pre runs before DOM updates)
+	$effect.pre(() => {
+		if (urlCompanyId) {
+			auth.setCompany(urlCompanyId);
+		}
+	});
+
+	// Load company details for display
+	let currentCompany = $state<Company | null>(null);
+	$effect(() => {
+		if ($currentCompanyId) {
+			companiesApi.get($currentCompanyId).then(c => {
+				currentCompany = c;
+			}).catch(() => {
+				currentCompany = null;
+			});
+		} else {
+			currentCompany = null;
+		}
+	});
 
 	const navItems = $derived([
 		{ href: '/companies', label: 'Companies', icon: 'business' }
@@ -85,7 +113,14 @@
 
 			{#if $currentCompanyId}
 				<div class="pt-4 mt-4 border-t border-surface-200">
-					<p class="px-3 pb-2 text-xs font-medium text-surface-400 uppercase">Company</p>
+					{#if currentCompany}
+						<div class="px-3 pb-3">
+							<p class="text-xs font-medium text-surface-400 uppercase">Company</p>
+							<p class="text-sm font-medium text-surface-900 truncate">{currentCompany.name}</p>
+						</div>
+					{:else}
+						<p class="px-3 pb-2 text-xs font-medium text-surface-400 uppercase">Company</p>
+					{/if}
 					{#each companyNavItems as item}
 						<a
 							href={item.href}

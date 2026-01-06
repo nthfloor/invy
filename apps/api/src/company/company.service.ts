@@ -14,6 +14,7 @@ import {
   createPaginatedResult,
   getPaginationParams,
 } from '../shared/utils/pagination';
+import { DEFAULT_CURRENCY } from '../shared/constants/currencies';
 
 @Injectable()
 export class CompanyService {
@@ -45,7 +46,7 @@ export class CompanyService {
       taxId: dto.taxId,
       taxNumber: dto.taxNumber,
       registrationNumber: dto.registrationNumber,
-      currency: dto.currency || 'ZAR',
+      currency: dto.currency || DEFAULT_CURRENCY,
       address: dto.address,
       settings: dto.settings || {
         invoicePrefix: 'INV',

@@ -66,6 +66,17 @@ cp .env.example .env
 npm run migration:run
 ```
 
+### Seed Demo Data
+
+```bash
+pnpm seed                    # Create 10 of each record type
+pnpm seed --count=50         # Create 50 of each type
+pnpm seed --clients=100 --products=30 --invoices=200  # Specific counts
+pnpm seed -h                 # Show help
+```
+
+This creates a demo company (Acme Corporation) with clients, products, and invoices for testing.
+
 ### Generate API Token
 
 ```bash

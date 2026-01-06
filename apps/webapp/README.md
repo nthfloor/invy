@@ -1,38 +1,55 @@
-# sv
+# Invy Webapp
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+Invoice management web application built with SvelteKit 2 and Svelte 5.
 
-## Creating a project
+## Tech Stack
 
-If you're seeing this, you've probably already done this step. Congrats!
+- SvelteKit 2 with Svelte 5 (runes)
+- TailwindCSS 4
+- TypeScript
 
-```sh
-# create a new project in the current directory
-npx sv create
+## Development
 
-# create a new project in my-app
-npx sv create my-app
+```bash
+pnpm dev
 ```
 
-## Developing
+## Environment
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+Requires `.env` file at monorepo root with:
+- `VITE_API_URL` - API base URL (default: http://localhost:3000)
 
-```sh
-npm run dev
+## Structure
 
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
+- `src/routes/(app)/` - Authenticated app routes
+- `src/routes/(auth)/` - Login/signup routes
+- `src/lib/api/` - API client
+- `src/lib/components/` - Shared components
+- `src/lib/stores/` - Svelte stores
+
+## Deployment
+
+The webapp is built as a static site and deployed to S3/CloudFront.
+
+### Build for Production
+
+```bash
+pnpm build:webapp
 ```
 
-## Building
+### Deploy to AWS
 
-To create a production version of your app:
+```bash
+# Development environment
+pnpm deploy:webapp:dev
 
-```sh
-npm run build
+# Production environment
+pnpm deploy:webapp:prod
 ```
 
-You can preview the production build with `npm run preview`.
+This will:
+1. Build the SvelteKit app as a static site
+2. Sync the output to an S3 bucket
+3. The `--delete` flag removes old files not in the new build
 
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+For production, serve via CloudFront for caching and HTTPS.

@@ -72,14 +72,12 @@
 
 	<!-- Search -->
 	<div class="mb-6">
-		<div class="relative max-w-md">
-			<span class="absolute left-3 top-1/2 -translate-y-1/2 text-surface-400 material-icons text-lg">
-				search
-			</span>
+		<div class="flex items-center max-w-md border border-surface-300 rounded-lg bg-white focus-within:ring-2 focus-within:ring-primary-500 focus-within:border-primary-500">
+			<span class="pl-3 text-surface-400 material-icons text-lg">search</span>
 			<input
 				type="text"
 				placeholder="Search clients..."
-				class="input pl-10"
+				class="flex-1 px-3 py-2 bg-transparent border-none focus:outline-none focus:ring-0"
 				bind:value={searchQuery}
 			/>
 		</div>

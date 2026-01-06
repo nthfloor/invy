@@ -3,6 +3,14 @@ import { IsString, IsOptional, IsDateString } from 'class-validator';
 
 export class UpdateInvoiceDto {
   @ApiPropertyOptional({
+    description: 'Issue date',
+    example: '2024-01-15',
+  })
+  @IsOptional()
+  @IsDateString()
+  issueDate?: string;
+
+  @ApiPropertyOptional({
     description: 'Due date',
     example: '2024-02-14',
   })

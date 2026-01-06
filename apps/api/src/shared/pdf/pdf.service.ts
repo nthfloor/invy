@@ -7,6 +7,7 @@ import { CreditNoteEntity } from '../../credit-note/credit-note.entity';
 import { CompanyEntity, CompanyAddress } from '../../company/company.entity';
 import { ClientEntity, ClientAddress } from '../../client/client.entity';
 import { ClientStatementDto, InvoiceStatementDto } from '../../statement/dto';
+import { DEFAULT_CURRENCY } from '../constants/currencies';
 
 // Page constants
 const PAGE_WIDTH = 595.28; // A4 width in points
@@ -1279,7 +1280,7 @@ export class PdfService {
   private formatCurrency(amount: number, currency: string): string {
     return new Intl.NumberFormat('en-ZA', {
       style: 'currency',
-      currency: currency || 'ZAR',
+      currency: currency || DEFAULT_CURRENCY,
     }).format(amount);
   }
 

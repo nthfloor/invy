@@ -28,7 +28,7 @@
 
 	function selectCompany(company: Company) {
 		auth.setCompany(company.id);
-		goto(`/companies/${company.id}/clients`);
+		goto(`/companies/${company.id}`);
 	}
 </script>
 

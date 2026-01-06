@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { companiesApi } from '$lib/api/client';
+	import { CURRENCY_INFO, DEFAULT_CURRENCY } from '$lib/constants/currencies';
 
 	let saving = $state(false);
 	let error = $state<string | null>(null);
@@ -12,7 +13,7 @@
 		taxId: '',
 		taxNumber: '',
 		registrationNumber: '',
-		currency: 'ZAR',
+		currency: DEFAULT_CURRENCY,
 		address: {
 			line1: '',
 			line2: '',
@@ -108,10 +109,9 @@
 				<div>
 					<label for="currency" class="block text-sm font-medium text-surface-700 mb-1">Currency *</label>
 					<select id="currency" class="input" bind:value={formData.currency} required>
-						<option value="ZAR">ZAR - South African Rand</option>
-						<option value="USD">USD - US Dollar</option>
-						<option value="EUR">EUR - Euro</option>
-						<option value="GBP">GBP - British Pound</option>
+						{#each Object.values(CURRENCY_INFO) as currency}
+							<option value={currency.code}>{currency.code} - {currency.name}</option>
+						{/each}
 					</select>
 				</div>
 			</div>

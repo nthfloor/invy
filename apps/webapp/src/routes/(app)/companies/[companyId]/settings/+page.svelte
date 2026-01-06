@@ -3,6 +3,7 @@
 	import { companiesApi, type Company } from '$lib/api/client';
 	import { onMount } from 'svelte';
 	import ErrorState from '$lib/components/ErrorState.svelte';
+	import { CURRENCY_INFO, DEFAULT_CURRENCY, type Currency } from '$lib/constants/currencies';
 
 	let companyId = $derived($page.params.companyId);
 
@@ -19,7 +20,7 @@
 		taxId: '',
 		taxNumber: '',
 		registrationNumber: '',
-		currency: 'ZAR',
+		currency: DEFAULT_CURRENCY,
 		address: {
 			line1: '',
 			line2: '',
@@ -48,7 +49,7 @@
 					taxId: company.taxId || '',
 					taxNumber: company.taxNumber || '',
 					registrationNumber: company.registrationNumber || '',
-					currency: company.currency || 'ZAR',
+					currency: (company.currency || DEFAULT_CURRENCY) as Currency,
 					address: {
 						line1: company.address?.line1 || '',
 						line2: company.address?.line2 || '',
@@ -151,10 +152,9 @@
 							Currency *
 						</label>
 						<select id="currency" class="input" bind:value={formData.currency} required>
-							<option value="ZAR">ZAR - South African Rand</option>
-							<option value="USD">USD - US Dollar</option>
-							<option value="EUR">EUR - Euro</option>
-							<option value="GBP">GBP - British Pound</option>
+							{#each Object.values(CURRENCY_INFO) as currency}
+								<option value={currency.code}>{currency.code} - {currency.name}</option>
+							{/each}
 						</select>
 					</div>
 				</div>

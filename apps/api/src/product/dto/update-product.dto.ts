@@ -7,7 +7,12 @@ import {
   IsUUID,
   MaxLength,
   Min,
+  IsIn,
 } from 'class-validator';
+import {
+  SUPPORTED_CURRENCIES,
+  DEFAULT_CURRENCY,
+} from '../../shared/constants/currencies';
 
 export class UpdateProductDto {
   @ApiPropertyOptional({ description: 'Product name' })
@@ -26,6 +31,16 @@ export class UpdateProductDto {
   @IsNumber({ maxDecimalPlaces: 2 })
   @Min(0)
   unitPrice?: number;
+
+  @ApiPropertyOptional({
+    description: 'Currency code',
+    example: DEFAULT_CURRENCY,
+    enum: SUPPORTED_CURRENCIES,
+  })
+  @IsOptional()
+  @IsString()
+  @IsIn(SUPPORTED_CURRENCIES)
+  currency?: string;
 
   @ApiPropertyOptional({ description: 'Default tax ID for this product' })
   @IsOptional()

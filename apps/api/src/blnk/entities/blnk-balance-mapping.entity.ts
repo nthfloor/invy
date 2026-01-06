@@ -6,6 +6,7 @@ import {
   UpdateDateColumn,
   Index,
 } from 'typeorm';
+import { DEFAULT_CURRENCY } from '../../shared/constants/currencies';
 
 export type BalanceType = 'revenue' | 'cash' | 'accounts_receivable';
 
@@ -36,7 +37,7 @@ export class BlnkBalanceMappingEntity {
   @Column({ type: 'varchar', length: 100 })
   ledgerId!: string; // The Blnk ledger this balance belongs to
 
-  @Column({ type: 'varchar', length: 10, default: 'ZAR' })
+  @Column({ type: 'varchar', length: 10, default: DEFAULT_CURRENCY })
   currency!: string;
 
   @CreateDateColumn({ type: 'timestamp with time zone' })
